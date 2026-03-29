@@ -71,18 +71,21 @@ export default function CatalogPage() {
   };
 
   return (
-    <div data-testid="catalog-page" className="pt-20 min-h-screen bg-[#1A1A1A]">
+    <div data-testid="catalog-page" className="pt-20 min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="py-24 bg-[#0F0F0F]">
+      <section className="py-24 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="max-w-2xl">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-              Downloads
-            </p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl md:text-6xl uppercase tracking-tighter text-white mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                Downloads
+              </p>
+            </div>
+            <h1 className="font-['Montserrat'] font-bold text-5xl md:text-6xl uppercase tracking-tight text-[#1A1A1A] mb-6">
               Product<br />Catalogs
             </h1>
-            <p className="font-['IBM_Plex_Sans'] text-[#6B7280] text-lg">
+            <p className="font-['Inter'] text-[#6B7280] text-lg">
               Download our comprehensive product catalogs featuring detailed specifications, 
               product ranges, and technical information.
             </p>
@@ -91,7 +94,7 @@ export default function CatalogPage() {
       </section>
 
       {/* Catalogs Grid */}
-      <section className="py-24 bg-[#1A1A1A]">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           {loading ? (
             <div className="flex justify-center py-20">
@@ -103,7 +106,7 @@ export default function CatalogPage() {
                 <div
                   key={catalog.id}
                   data-testid={`catalog-card-${catalog.id}`}
-                  className="bg-[#222222] border border-white/5 overflow-hidden group hover:border-[#FF6A00]/50 transition-colors"
+                  className="bg-white border border-gray-100 shadow-sm overflow-hidden group hover:shadow-xl hover:border-[#FF6A00] transition-all"
                 >
                   {/* Preview Image */}
                   <div className="relative h-48 overflow-hidden">
@@ -114,55 +117,44 @@ export default function CatalogPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#1A1A1A] flex items-center justify-center">
+                      <div className="w-full h-full bg-[#F8F9FA] flex items-center justify-center">
                         <FileText size={48} className="text-[#6B7280]" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#222222] to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[#FF6A00] transform scale-x-0 group-hover:scale-x-100 transition-transform"></div>
                     <div className="absolute top-4 right-4 bg-[#FF6A00] px-3 py-1">
-                      <span className="text-white text-xs uppercase tracking-wider">PDF</span>
+                      <span className="text-white text-xs uppercase tracking-wider font-['Montserrat'] font-bold">PDF</span>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="p-6">
-                    <p className="text-[#FF6A00] text-xs uppercase tracking-wider mb-2">
+                    <p className="text-[#FF6A00] text-xs uppercase tracking-wider mb-2 font-['Montserrat'] font-semibold">
                       {catalog.category}
                     </p>
-                    <h3 className="font-['Barlow_Condensed'] font-bold text-xl uppercase text-white mb-4">
+                    <h3 className="font-['Montserrat'] font-bold text-xl uppercase text-[#1A1A1A] mb-4">
                       {catalog.name}
                     </h3>
                     
                     <div className="flex gap-3">
-                      {catalog.file_url !== "#" ? (
-                        <>
-                          <a
-                            href={catalog.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 bg-[#FF6A00] text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-wider py-3 hover:bg-white hover:text-[#1A1A1A] transition-colors"
-                          >
-                            <Download size={16} />
-                            Download
-                          </a>
-                          <a
-                            href={catalog.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center px-4 border border-white/10 text-white hover:border-white transition-colors"
-                          >
-                            <Eye size={18} />
-                          </a>
-                        </>
-                      ) : (
-                        <button
-                          disabled
-                          className="flex-1 flex items-center justify-center gap-2 bg-[#6B7280]/50 text-white/50 font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-wider py-3 cursor-not-allowed"
-                        >
-                          <Download size={16} />
-                          Coming Soon
-                        </button>
-                      )}
+                      <a
+                        href={catalog.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-wider py-3 hover:bg-[#0F3D2E] transition-colors"
+                      >
+                        <Download size={16} />
+                        Download
+                      </a>
+                      <a
+                        href={catalog.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center px-4 border-2 border-[#FF6A00] text-[#FF6A00] hover:bg-[#FF6A00] hover:text-white transition-colors"
+                      >
+                        <Eye size={18} />
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -175,17 +167,17 @@ export default function CatalogPage() {
       {/* Request Catalog */}
       <section className="py-24 bg-[#0F3D2E]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-6">
+          <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-6">
             Need a Physical Catalog?
           </h2>
-          <p className="font-['IBM_Plex_Sans'] text-white/60 text-lg max-w-2xl mx-auto mb-10">
+          <p className="font-['Inter'] text-white/70 text-lg max-w-2xl mx-auto mb-10">
             Request a printed catalog to be delivered to your address. 
             Perfect for reference and sharing with your team.
           </p>
           <a
             href="/contact"
             data-testid="request-catalog-btn"
-            className="inline-block bg-[#FF6A00] text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
+            className="inline-block bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
           >
             Request Catalog
           </a>

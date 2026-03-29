@@ -48,18 +48,21 @@ const applications = [
 
 export default function ApplicationsPage() {
   return (
-    <div data-testid="applications-page" className="pt-20 min-h-screen bg-[#1A1A1A]">
+    <div data-testid="applications-page" className="pt-20 min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="py-24 bg-[#0F0F0F]">
+      <section className="py-24 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="max-w-2xl">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-              Applications
-            </p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl md:text-6xl uppercase tracking-tighter text-white mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                Applications
+              </p>
+            </div>
+            <h1 className="font-['Montserrat'] font-bold text-5xl md:text-6xl uppercase tracking-tight text-[#1A1A1A] mb-6">
               Industrial<br />Applications
             </h1>
-            <p className="font-['IBM_Plex_Sans'] text-[#6B7280] text-lg">
+            <p className="font-['Inter'] text-[#6B7280] text-lg">
               Discover how Mayur abrasives power various industries. 
               From metal fabrication to construction, we have the right solution for every application.
             </p>
@@ -68,7 +71,7 @@ export default function ApplicationsPage() {
       </section>
 
       {/* Applications Grid */}
-      <section className="py-24 bg-[#1A1A1A]">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="space-y-24">
             {applications.map((app, idx) => {
@@ -90,22 +93,29 @@ export default function ApplicationsPage() {
                       <div className="absolute top-6 left-6 w-16 h-16 bg-[#FF6A00] flex items-center justify-center">
                         <Icon size={32} className="text-white" />
                       </div>
+                      <div className="absolute bottom-0 right-0 w-24 h-24 bg-[#0F3D2E]"></div>
                     </div>
                   </div>
                   <div className={`${isEven ? "" : "lg:order-1"}`}>
-                    <h2 className="font-['Barlow_Condensed'] font-bold text-4xl uppercase tracking-tight text-white mb-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-12 h-1 bg-[#FF6A00]"></div>
+                      <span className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                        Industry
+                      </span>
+                    </div>
+                    <h2 className="font-['Montserrat'] font-bold text-4xl uppercase tracking-tight text-[#1A1A1A] mb-4">
                       {app.title}
                     </h2>
-                    <p className="font-['IBM_Plex_Sans'] text-[#6B7280] leading-relaxed mb-6">
+                    <p className="font-['Inter'] text-[#6B7280] leading-relaxed mb-6 text-lg">
                       {app.desc}
                     </p>
                     <div className="mb-8">
-                      <p className="text-[#6B7280] text-sm uppercase tracking-wider mb-3">Recommended Products:</p>
+                      <p className="text-[#6B7280] text-sm uppercase tracking-wider mb-3 font-['Montserrat'] font-semibold">Recommended Products:</p>
                       <div className="flex flex-wrap gap-2">
                         {app.products.map((product, pIdx) => (
                           <span
                             key={pIdx}
-                            className="bg-[#222222] border border-white/10 text-white px-3 py-1 text-sm"
+                            className="bg-[#FF6A00]/10 border border-[#FF6A00]/20 text-[#FF6A00] px-4 py-2 text-sm font-['Inter']"
                           >
                             {product}
                           </span>
@@ -114,7 +124,7 @@ export default function ApplicationsPage() {
                     </div>
                     <Link
                       to="/products"
-                      className="inline-flex items-center gap-2 text-[#FF6A00] font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest hover:text-white transition-colors"
+                      className="inline-flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
                     >
                       View Products <ArrowRight size={16} />
                     </Link>
@@ -127,19 +137,19 @@ export default function ApplicationsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#0F3D2E]">
+      <section className="py-24 bg-[#FF6A00]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-6">
+          <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-6">
             Need Help Choosing?
           </h2>
-          <p className="font-['IBM_Plex_Sans'] text-white/60 text-lg max-w-2xl mx-auto mb-10">
+          <p className="font-['Inter'] text-white/80 text-lg max-w-2xl mx-auto mb-10">
             Our experts can help you find the right abrasive products for your specific application. 
             Contact us for personalized recommendations.
           </p>
           <Link
             to="/contact"
             data-testid="applications-contact-btn"
-            className="inline-block bg-[#FF6A00] text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
+            className="inline-block bg-white text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-[#1A1A1A] hover:text-white transition-colors"
           >
             Contact Us
           </Link>

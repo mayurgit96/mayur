@@ -12,7 +12,8 @@ import {
   Car,
   Wrench,
   HardHat,
-  Quote
+  Quote,
+  CheckCircle
 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 
@@ -65,7 +66,7 @@ export default function HomePage() {
   };
 
   return (
-    <div data-testid="home-page">
+    <div data-testid="home-page" className="bg-white">
       {/* Hero Section */}
       <section data-testid="hero-section" className="relative h-screen min-h-[700px] flex items-center">
         {/* Background Video/Image */}
@@ -88,23 +89,26 @@ export default function HomePage() {
               className="w-full h-full object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A] via-[#1A1A1A]/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40"></div>
         </div>
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
           <div className="max-w-2xl">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-6 animate-fade-in">
-              Premium Abrasive Solutions
-            </p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-5xl md:text-6xl lg:text-7xl uppercase tracking-tighter text-white leading-[0.9] mb-6 animate-slide-up">
+            <div className="flex items-center gap-2 mb-6 animate-fade-in">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                Premium Abrasive Solutions
+              </p>
+            </div>
+            <h1 className="font-['Montserrat'] font-bold text-5xl md:text-6xl lg:text-7xl uppercase tracking-tight text-white leading-[1.1] mb-6 animate-slide-up">
               Power That<br />
               <span className="text-[#FF6A00]">Shapes Metal</span>
             </h1>
-            <p className="font-['Barlow_Condensed'] font-bold text-2xl md:text-3xl uppercase tracking-tight text-white/80 mb-8 animate-slide-up stagger-2">
+            <p className="font-['Montserrat'] font-semibold text-xl md:text-2xl uppercase tracking-wide text-white/90 mb-6 animate-slide-up stagger-2">
               Precision That Builds Trust
             </p>
-            <p className="font-['IBM_Plex_Sans'] text-[#6B7280] text-lg max-w-lg mb-10 animate-fade-in stagger-3">
+            <p className="font-['Inter'] text-white/70 text-lg max-w-lg mb-10 animate-fade-in stagger-3 leading-relaxed">
               Industry-leading cutting wheels, grinding wheels, and abrasive products. 
               Trusted by 200+ dealers across India.
             </p>
@@ -112,14 +116,14 @@ export default function HomePage() {
               <Link
                 to="/products"
                 data-testid="hero-explore-products-btn"
-                className="bg-[#FF6A00] text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors flex items-center gap-2"
+                className="bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-[#0F3D2E] transition-colors flex items-center gap-2"
               >
                 Explore Products <ArrowRight size={18} />
               </Link>
               <Link
                 to="/dealer"
                 data-testid="hero-become-dealer-btn"
-                className="border border-white/30 text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:border-white transition-colors"
+                className="border-2 border-white text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
               >
                 Become Dealer
               </Link>
@@ -129,42 +133,45 @@ export default function HomePage() {
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center pt-2">
             <div className="w-1 h-3 bg-[#FF6A00] rounded-full"></div>
           </div>
         </div>
       </section>
 
-      {/* Brand Introduction */}
-      <section className="py-24 bg-[#0F0F0F] industrial-pattern">
+      {/* Brand Introduction - Light */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-                About Mayur
-              </p>
-              <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-12 h-1 bg-[#FF6A00]"></div>
+                <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                  About Mayur
+                </p>
+              </div>
+              <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A] mb-6 leading-tight">
                 Industrial Strength,<br />Trusted Quality
               </h2>
-              <p className="font-['IBM_Plex_Sans'] text-[#6B7280] leading-relaxed mb-8">
+              <p className="font-['Inter'] text-[#6B7280] leading-relaxed mb-8 text-lg">
                 Mayur Abrasives is a leading manufacturer and supplier of premium quality abrasive products. 
-                With our brands <strong className="text-white">Mayur Plus</strong> and <strong className="text-white">Mayur Pro</strong>, 
+                With our brands <strong className="text-[#1A1A1A]">Mayur Plus</strong> and <strong className="text-[#1A1A1A]">Mayur Pro</strong>, 
                 we cater to diverse industrial needs from metal fabrication to construction.
               </p>
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div>
-                  <p className="font-['Barlow_Condensed'] font-black text-5xl text-[#FF6A00]">200+</p>
-                  <p className="text-[#6B7280] text-sm uppercase tracking-wider">Dealers Nationwide</p>
+              <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="border-l-4 border-[#FF6A00] pl-4">
+                  <p className="font-['Montserrat'] font-bold text-5xl text-[#FF6A00]">200+</p>
+                  <p className="text-[#6B7280] text-sm uppercase tracking-wider font-['Inter'] mt-1">Dealers Nationwide</p>
                 </div>
-                <div>
-                  <p className="font-['Barlow_Condensed'] font-black text-5xl text-[#FF6A00]">15+</p>
-                  <p className="text-[#6B7280] text-sm uppercase tracking-wider">Years Experience</p>
+                <div className="border-l-4 border-[#0F3D2E] pl-4">
+                  <p className="font-['Montserrat'] font-bold text-5xl text-[#0F3D2E]">15+</p>
+                  <p className="text-[#6B7280] text-sm uppercase tracking-wider font-['Inter'] mt-1">Years Experience</p>
                 </div>
               </div>
               <Link
                 to="/about"
                 data-testid="about-learn-more-btn"
-                className="inline-flex items-center gap-2 text-[#FF6A00] font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
               >
                 Learn More <ChevronRight size={18} />
               </Link>
@@ -175,25 +182,27 @@ export default function HomePage() {
                 alt="Manufacturing facility"
                 className="w-full h-[500px] object-cover"
               />
-              <div className="absolute -bottom-6 -left-6 w-48 h-48 bg-[#0F3D2E] flex items-center justify-center">
-                <div className="text-center">
-                  <p className="font-['Barlow_Condensed'] font-black text-4xl text-white">ISO</p>
-                  <p className="text-white/60 text-sm">Certified</p>
-                </div>
+              <div className="absolute -bottom-6 -left-6 bg-[#FF6A00] p-8 flex flex-col items-center justify-center">
+                <p className="font-['Montserrat'] font-bold text-4xl text-white">ISO</p>
+                <p className="text-white/80 text-sm font-['Inter']">Certified</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Product Categories */}
-      <section data-testid="categories-section" className="py-24 bg-[#1A1A1A]">
+      {/* Product Categories - Gray Background */}
+      <section data-testid="categories-section" className="py-24 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-              Our Products
-            </p>
-            <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                Our Products
+              </p>
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+            </div>
+            <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
               Product Categories
             </h2>
           </div>
@@ -204,21 +213,22 @@ export default function HomePage() {
                 key={cat.id}
                 to={`/products?category=${cat.id}`}
                 data-testid={`category-${cat.id}`}
-                className="group relative h-64 overflow-hidden"
+                className="group relative h-72 overflow-hidden bg-white shadow-lg"
               >
                 <img
                   src={cat.image}
                   alt={cat.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/50 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-[#FF6A00] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="font-['Barlow_Condensed'] font-bold text-2xl uppercase text-white mb-1">
+                  <h3 className="font-['Montserrat'] font-bold text-2xl uppercase text-white mb-1">
                     {cat.name}
                   </h3>
-                  <p className="text-[#6B7280] text-sm">{cat.desc}</p>
+                  <p className="text-white/70 text-sm font-['Inter']">{cat.desc}</p>
                   <div className="mt-4 flex items-center gap-2 text-[#FF6A00] opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-wider">View Products</span>
+                    <span className="font-['Montserrat'] font-bold text-sm uppercase tracking-wider">View Products</span>
                     <ArrowRight size={16} />
                   </div>
                 </div>
@@ -228,14 +238,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-24 bg-[#0F3D2E]">
+      {/* Why Choose Us - Orange Section */}
+      <section className="py-24 bg-[#FF6A00]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
+            <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-white/80 mb-4">
               Why Mayur
             </p>
-            <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white">
+            <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white">
               Why Choose Us
             </h2>
           </div>
@@ -247,15 +257,15 @@ export default function HomePage() {
                 <div
                   key={idx}
                   data-testid={`feature-${idx}`}
-                  className="text-center p-8"
+                  className="text-center p-8 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
                 >
-                  <div className="w-16 h-16 bg-[#FF6A00] rounded mx-auto mb-6 flex items-center justify-center">
-                    <Icon size={32} className="text-white" />
+                  <div className="w-16 h-16 bg-white rounded-lg mx-auto mb-6 flex items-center justify-center">
+                    <Icon size={32} className="text-[#FF6A00]" />
                   </div>
-                  <h3 className="font-['Barlow_Condensed'] font-bold text-xl uppercase text-white mb-2">
+                  <h3 className="font-['Montserrat'] font-bold text-xl uppercase text-white mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-white/60 text-sm">{feature.desc}</p>
+                  <p className="text-white/80 text-sm font-['Inter']">{feature.desc}</p>
                 </div>
               );
             })}
@@ -263,27 +273,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Industries Served */}
-      <section className="py-24 bg-[#1A1A1A]">
+      {/* Industries Served - White */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-                Industries
-              </p>
-              <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-12 h-1 bg-[#FF6A00]"></div>
+                <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                  Industries
+                </p>
+              </div>
+              <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A] mb-8">
                 Industries We Serve
               </h2>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 {industries.map((industry, idx) => {
                   const Icon = industry.icon;
                   return (
                     <div
                       key={idx}
-                      className="flex items-center gap-4 p-4 bg-[#222222] border border-white/5 hover:border-[#FF6A00]/50 transition-colors"
+                      className="flex items-center gap-4 p-5 bg-[#F8F9FA] border-l-4 border-[#FF6A00] hover:bg-[#FF6A00]/5 transition-colors"
                     >
                       <Icon size={24} className="text-[#FF6A00]" />
-                      <span className="font-['IBM_Plex_Sans'] font-medium text-white">{industry.name}</span>
+                      <span className="font-['Montserrat'] font-semibold text-[#1A1A1A]">{industry.name}</span>
                     </div>
                   );
                 })}
@@ -295,27 +308,31 @@ export default function HomePage() {
                 alt="Industrial application"
                 className="w-full h-[400px] object-cover"
               />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF6A00]"></div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products - Gray */}
       {featuredProducts.length > 0 && (
-        <section data-testid="featured-products-section" className="py-24 bg-[#0F0F0F]">
+        <section data-testid="featured-products-section" className="py-24 bg-[#F8F9FA]">
           <div className="max-w-7xl mx-auto px-6 lg:px-12">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-                  Featured
-                </p>
-                <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-12 h-1 bg-[#FF6A00]"></div>
+                  <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                    Featured
+                  </p>
+                </div>
+                <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
                   Top Products
                 </h2>
               </div>
               <Link
                 to="/products"
-                className="hidden md:flex items-center gap-2 text-[#FF6A00] font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest hover:text-white transition-colors"
+                className="hidden md:flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
               >
                 View All <ArrowRight size={16} />
               </Link>
@@ -327,28 +344,31 @@ export default function HomePage() {
                   key={product.id}
                   to={`/products/${product.id}`}
                   data-testid={`featured-product-${product.id}`}
-                  className="product-card p-6"
+                  className="bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#FF6A00] transition-all group"
                 >
-                  <div className="h-48 mb-4 bg-[#1A1A1A] overflow-hidden">
+                  <div className="h-48 overflow-hidden relative">
                     {product.image_url ? (
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#6B7280]">
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-[#6B7280]">
                         No Image
                       </div>
                     )}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[#FF6A00] transform scale-x-0 group-hover:scale-x-100 transition-transform"></div>
                   </div>
-                  <p className="text-[#FF6A00] text-xs uppercase tracking-wider mb-2">
-                    {product.category.replace(/-/g, " ")}
-                  </p>
-                  <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase text-white mb-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-[#6B7280] text-sm line-clamp-2">{product.description}</p>
+                  <div className="p-6">
+                    <p className="text-[#FF6A00] text-xs uppercase tracking-wider font-['Montserrat'] font-semibold mb-2">
+                      {product.category.replace(/-/g, " ")}
+                    </p>
+                    <h3 className="font-['Montserrat'] font-bold text-lg uppercase text-[#1A1A1A] mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-[#6B7280] text-sm font-['Inter'] line-clamp-2">{product.description}</p>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -356,14 +376,18 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Testimonials */}
-      <section className="py-24 bg-[#1A1A1A]">
+      {/* Testimonials - White */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-              Testimonials
-            </p>
-            <h2 className="font-['Barlow_Condensed'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-white">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                Testimonials
+              </p>
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+            </div>
+            <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
               What Our Partners Say
             </h2>
           </div>
@@ -373,13 +397,18 @@ export default function HomePage() {
               <div
                 key={idx}
                 data-testid={`testimonial-${idx}`}
-                className="bg-[#222222] border border-white/5 p-8"
+                className="bg-[#F8F9FA] p-8 border-t-4 border-[#FF6A00] hover:shadow-lg transition-shadow"
               >
                 <Quote size={32} className="text-[#FF6A00] mb-6" />
-                <p className="text-white/80 leading-relaxed mb-6">"{testimonial.text}"</p>
-                <div>
-                  <p className="font-['Barlow_Condensed'] font-bold text-white uppercase">{testimonial.name}</p>
-                  <p className="text-[#6B7280] text-sm">{testimonial.company}</p>
+                <p className="text-[#1A1A1A] leading-relaxed mb-6 font-['Inter']">"{testimonial.text}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#FF6A00] rounded-full flex items-center justify-center">
+                    <span className="text-white font-['Montserrat'] font-bold">{testimonial.name.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <p className="font-['Montserrat'] font-bold text-[#1A1A1A] uppercase">{testimonial.name}</p>
+                    <p className="text-[#6B7280] text-sm font-['Inter']">{testimonial.company}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -387,13 +416,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section data-testid="cta-banner" className="py-24 bg-[#FF6A00]">
+      {/* CTA Banner - Green */}
+      <section data-testid="cta-banner" className="py-24 bg-[#0F3D2E]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="font-['Barlow_Condensed'] font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tighter text-white mb-6">
+          <h2 className="font-['Montserrat'] font-bold text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white mb-6">
             Join Our Dealer Network
           </h2>
-          <p className="font-['IBM_Plex_Sans'] text-white/80 text-lg max-w-2xl mx-auto mb-10">
+          <p className="font-['Inter'] text-white/70 text-lg max-w-2xl mx-auto mb-10">
             Partner with Mayur Abrasives and grow your business with premium quality products, 
             competitive pricing, and excellent support.
           </p>
@@ -401,7 +430,7 @@ export default function HomePage() {
             <Link
               to="/dealer"
               data-testid="cta-become-dealer-btn"
-              className="bg-white text-[#1A1A1A] font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-[#1A1A1A] hover:text-white transition-colors"
+              className="bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
             >
               Become a Dealer
             </Link>
@@ -410,7 +439,7 @@ export default function HomePage() {
               target="_blank"
               rel="noopener noreferrer"
               data-testid="cta-whatsapp-btn"
-              className="border-2 border-white text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
+              className="border-2 border-white text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#0F3D2E] transition-colors"
             >
               WhatsApp Us
             </a>

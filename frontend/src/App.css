@@ -1,6 +1,7 @@
-/* App specific styles */
+/* App specific styles - Light Theme with Orange Accents */
+
 .hero-video-overlay {
-  background: linear-gradient(180deg, rgba(26, 26, 26, 0.4) 0%, rgba(26, 26, 26, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 .card-hover {
@@ -9,7 +10,7 @@
 
 .card-hover:hover {
   transform: translateY(-8px);
-  border-color: #FF6A00;
+  box-shadow: 0 20px 40px rgba(255, 106, 0, 0.15);
 }
 
 .nav-link {
@@ -35,6 +36,7 @@
 .btn-primary {
   background-color: #FF6A00;
   color: white;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -43,13 +45,14 @@
 }
 
 .btn-primary:hover {
-  background-color: #FFFFFF;
-  color: #1A1A1A;
+  background-color: #0F3D2E;
+  color: white;
 }
 
 .btn-secondary {
-  border: 1px solid #6B7280;
-  color: white;
+  border: 2px solid #FF6A00;
+  color: #FF6A00;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -58,7 +61,8 @@
 }
 
 .btn-secondary:hover {
-  border-color: #FFFFFF;
+  background-color: #FF6A00;
+  color: white;
 }
 
 /* WhatsApp floating button */
@@ -83,25 +87,30 @@
   box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
 }
 
-/* Product card */
+/* Product card - Light theme */
 .product-card {
-  background: #222222;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
   transition: all 0.3s ease;
 }
 
 .product-card:hover {
-  border-color: rgba(255, 106, 0, 0.5);
+  border-color: #FF6A00;
+  box-shadow: 0 10px 30px rgba(255, 106, 0, 0.1);
   transform: translateY(-4px);
 }
 
-/* Section styles */
-.section-dark {
-  background-color: #1A1A1A;
+/* Section styles - Light theme */
+.section-light {
+  background-color: #FFFFFF;
 }
 
-.section-darker {
-  background-color: #0F0F0F;
+.section-gray {
+  background-color: #F8F9FA;
+}
+
+.section-orange {
+  background-color: #FF6A00;
 }
 
 .section-green {
@@ -110,18 +119,24 @@
 
 /* Stats counter */
 .stat-number {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 800;
-  font-size: 4rem;
+  font-size: 3rem;
   line-height: 1;
   color: #FF6A00;
 }
 
-/* Form styles */
+@media (min-width: 768px) {
+  .stat-number {
+    font-size: 4rem;
+  }
+}
+
+/* Form styles - Light theme */
 .form-input {
-  background-color: #222222;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #1A1A1A;
   padding: 1rem;
   transition: all 0.3s ease;
 }
@@ -129,6 +144,7 @@
 .form-input:focus {
   border-color: #FF6A00;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
 }
 
 /* Mobile menu */
@@ -138,7 +154,7 @@
   right: 0;
   width: 100%;
   height: 100vh;
-  background-color: #1A1A1A;
+  background-color: #FFFFFF;
   z-index: 100;
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -152,7 +168,7 @@
 .loader {
   width: 48px;
   height: 48px;
-  border: 4px solid #333;
+  border: 4px solid #E5E7EB;
   border-top-color: #FF6A00;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -172,12 +188,12 @@
   object-fit: cover;
 }
 
-/* Sidebar filter */
+/* Sidebar filter - Light theme */
 .filter-checkbox {
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid #6B7280;
+  border: 2px solid #D1D5DB;
   border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -186,4 +202,46 @@
 .filter-checkbox:checked {
   background-color: #FF6A00;
   border-color: #FF6A00;
+}
+
+/* Orange accent decorations */
+.orange-dot::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #FF6A00;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.orange-line::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background-color: #FF6A00;
+  margin-top: 16px;
+}
+
+/* Card with orange top border */
+.card-orange-top {
+  border-top: 4px solid #FF6A00;
+}
+
+/* Feature icon box */
+.icon-box-orange {
+  width: 64px;
+  height: 64px;
+  background-color: #FF6A00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+/* Admin panel dark theme */
+.admin-dark {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
 }

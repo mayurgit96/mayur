@@ -35,7 +35,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="pt-20 min-h-screen bg-[#1A1A1A] flex items-center justify-center">
+      <div className="pt-20 min-h-screen bg-white flex items-center justify-center">
         <div className="loader"></div>
       </div>
     );
@@ -43,9 +43,9 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="pt-20 min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center">
-        <p className="text-white text-xl mb-4">Product not found</p>
-        <Link to="/products" className="text-[#FF6A00] hover:text-white transition-colors">
+      <div className="pt-20 min-h-screen bg-white flex flex-col items-center justify-center">
+        <p className="text-[#1A1A1A] text-xl mb-4 font-['Montserrat']">Product not found</p>
+        <Link to="/products" className="text-[#FF6A00] hover:text-[#0F3D2E] transition-colors font-['Montserrat'] font-bold uppercase tracking-wider">
           Back to Products
         </Link>
       </div>
@@ -55,16 +55,16 @@ export default function ProductDetailPage() {
   const whatsappMessage = `Hi, I'm interested in ${product.name}. Please share more details.`;
 
   return (
-    <div data-testid="product-detail-page" className="pt-20 min-h-screen bg-[#1A1A1A]">
+    <div data-testid="product-detail-page" className="pt-20 min-h-screen bg-white">
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6">
         <Link
           to="/products"
           data-testid="back-to-products"
-          className="inline-flex items-center gap-2 text-[#6B7280] hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-[#6B7280] hover:text-[#FF6A00] transition-colors font-['Inter']"
         >
           <ArrowLeft size={18} />
-          <span className="font-['IBM_Plex_Sans'] text-sm">Back to Products</span>
+          <span className="text-sm">Back to Products</span>
         </Link>
       </div>
 
@@ -72,7 +72,7 @@ export default function ProductDetailPage() {
       <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-24">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Image */}
-          <div className="bg-[#222222] border border-white/5 overflow-hidden">
+          <div className="bg-[#F8F9FA] overflow-hidden">
             {product.image_url ? (
               <img
                 src={product.image_url}
@@ -80,7 +80,7 @@ export default function ProductDetailPage() {
                 className="w-full h-[400px] lg:h-[500px] object-cover"
               />
             ) : (
-              <div className="w-full h-[400px] lg:h-[500px] flex items-center justify-center text-[#6B7280]">
+              <div className="w-full h-[400px] lg:h-[500px] flex items-center justify-center text-[#6B7280] font-['Inter']">
                 No Image Available
               </div>
             )}
@@ -88,44 +88,47 @@ export default function ProductDetailPage() {
 
           {/* Info */}
           <div>
-            <p className="font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00] mb-4">
-              {product.category.replace(/-/g, " ")}
-            </p>
-            <h1 className="font-['Barlow_Condensed'] font-black text-4xl md:text-5xl uppercase tracking-tighter text-white mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-12 h-1 bg-[#FF6A00]"></div>
+              <p className="font-['Montserrat'] font-bold text-sm uppercase tracking-[0.2em] text-[#FF6A00]">
+                {product.category.replace(/-/g, " ")}
+              </p>
+            </div>
+            <h1 className="font-['Montserrat'] font-bold text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A] mb-6">
               {product.name}
             </h1>
-            <p className="font-['IBM_Plex_Sans'] text-[#6B7280] leading-relaxed mb-8">
+            <p className="font-['Inter'] text-[#6B7280] leading-relaxed mb-8 text-lg">
               {product.description}
             </p>
 
             {/* Specifications */}
-            <div className="bg-[#222222] border border-white/5 p-6 mb-8">
-              <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase text-white mb-4">
+            <div className="bg-[#F8F9FA] p-6 mb-8 border-l-4 border-[#FF6A00]">
+              <h3 className="font-['Montserrat'] font-bold text-lg uppercase text-[#1A1A1A] mb-4">
                 Specifications
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {product.size && (
                   <div>
-                    <p className="text-[#6B7280] text-sm">Size</p>
-                    <p className="text-white font-medium">{product.size}</p>
+                    <p className="text-[#6B7280] text-sm font-['Inter']">Size</p>
+                    <p className="text-[#1A1A1A] font-medium font-['Inter']">{product.size}</p>
                   </div>
                 )}
                 {product.thickness && (
                   <div>
-                    <p className="text-[#6B7280] text-sm">Thickness</p>
-                    <p className="text-white font-medium">{product.thickness}</p>
+                    <p className="text-[#6B7280] text-sm font-['Inter']">Thickness</p>
+                    <p className="text-[#1A1A1A] font-medium font-['Inter']">{product.thickness}</p>
                   </div>
                 )}
                 {product.grit && (
                   <div>
-                    <p className="text-[#6B7280] text-sm">Grit</p>
-                    <p className="text-white font-medium">{product.grit}</p>
+                    <p className="text-[#6B7280] text-sm font-['Inter']">Grit</p>
+                    <p className="text-[#1A1A1A] font-medium font-['Inter']">{product.grit}</p>
                   </div>
                 )}
                 {Object.entries(product.specifications || {}).map(([key, value]) => (
                   <div key={key}>
-                    <p className="text-[#6B7280] text-sm capitalize">{key.replace(/_/g, " ")}</p>
-                    <p className="text-white font-medium">{value}</p>
+                    <p className="text-[#6B7280] text-sm capitalize font-['Inter']">{key.replace(/_/g, " ")}</p>
+                    <p className="text-[#1A1A1A] font-medium font-['Inter']">{value}</p>
                   </div>
                 ))}
               </div>
@@ -134,17 +137,17 @@ export default function ProductDetailPage() {
             {/* Use Cases */}
             {product.use_cases && product.use_cases.length > 0 && (
               <div className="mb-8">
-                <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase text-white mb-4">
+                <h3 className="font-['Montserrat'] font-bold text-lg uppercase text-[#1A1A1A] mb-4">
                   Use Cases
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {product.use_cases.map((useCase, idx) => (
                     <span
                       key={idx}
-                      className="flex items-center gap-2 bg-[#0F3D2E]/30 text-[#0F3D2E] px-3 py-1 text-sm"
+                      className="flex items-center gap-2 bg-[#FF6A00]/10 text-[#FF6A00] px-4 py-2 text-sm font-['Inter']"
                     >
-                      <Check size={14} className="text-[#FF6A00]" />
-                      <span className="text-white">{useCase}</span>
+                      <Check size={14} />
+                      {useCase}
                     </span>
                   ))}
                 </div>
@@ -158,7 +161,7 @@ export default function ProductDetailPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid="product-inquiry-btn"
-                className="flex-1 min-w-[200px] bg-[#FF6A00] text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-6 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors flex items-center justify-center gap-2"
+                className="flex-1 min-w-[200px] bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 py-4 hover:bg-[#0F3D2E] transition-colors flex items-center justify-center gap-2"
               >
                 <MessageCircle size={18} />
                 Get Quote
@@ -166,7 +169,7 @@ export default function ProductDetailPage() {
               <Link
                 to="/catalog"
                 data-testid="download-brochure-btn"
-                className="flex-1 min-w-[200px] border border-white/30 text-white font-['IBM_Plex_Sans'] font-bold text-sm uppercase tracking-widest px-6 py-4 hover:border-white transition-colors flex items-center justify-center gap-2"
+                className="flex-1 min-w-[200px] border-2 border-[#FF6A00] text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 py-4 hover:bg-[#FF6A00] hover:text-white transition-colors flex items-center justify-center gap-2"
               >
                 <Download size={18} />
                 Download Brochure
@@ -178,7 +181,7 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-24">
-            <h2 className="font-['Barlow_Condensed'] font-bold text-3xl uppercase text-white mb-8">
+            <h2 className="font-['Montserrat'] font-bold text-3xl uppercase text-[#1A1A1A] mb-8">
               Related Products
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -187,27 +190,30 @@ export default function ProductDetailPage() {
                   key={relProduct.id}
                   to={`/products/${relProduct.id}`}
                   data-testid={`related-product-${relProduct.id}`}
-                  className="product-card p-6"
+                  className="bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#FF6A00] transition-all group"
                 >
-                  <div className="h-40 mb-4 bg-[#1A1A1A] overflow-hidden">
+                  <div className="h-40 overflow-hidden relative">
                     {relProduct.image_url ? (
                       <img
                         src={relProduct.image_url}
                         alt={relProduct.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#6B7280] text-sm">
+                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-[#6B7280] text-sm font-['Inter']">
                         No Image
                       </div>
                     )}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[#FF6A00] transform scale-x-0 group-hover:scale-x-100 transition-transform"></div>
                   </div>
-                  <p className="text-[#FF6A00] text-xs uppercase tracking-wider mb-1">
-                    {relProduct.category.replace(/-/g, " ")}
-                  </p>
-                  <h3 className="font-['Barlow_Condensed'] font-bold text-base uppercase text-white">
-                    {relProduct.name}
-                  </h3>
+                  <div className="p-4">
+                    <p className="text-[#FF6A00] text-xs uppercase tracking-wider font-['Montserrat'] font-semibold mb-1">
+                      {relProduct.category.replace(/-/g, " ")}
+                    </p>
+                    <h3 className="font-['Montserrat'] font-bold text-base uppercase text-[#1A1A1A]">
+                      {relProduct.name}
+                    </h3>
+                  </div>
                 </Link>
               ))}
             </div>
