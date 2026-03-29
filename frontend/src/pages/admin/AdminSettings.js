@@ -159,20 +159,45 @@ export default function AdminSettings() {
         {/* Video Settings */}
         <div className="bg-[#1A1A1A] border border-white/5 p-6">
           <h2 className="font-['Barlow_Condensed'] font-bold text-xl uppercase text-white mb-6">
-            Hero Video (Sora 2)
+            Hero Video
           </h2>
 
           <div className="space-y-6">
             <div>
-              <label className="text-[#6B7280] text-sm mb-2 block">Current Video URL</label>
+              <label className="text-[#6B7280] text-sm mb-2 block">Hero Video URL</label>
               <input
                 type="url"
                 value={settings.hero_video_url}
                 onChange={(e) => setSettings({ ...settings, hero_video_url: e.target.value })}
+                data-testid="hero-video-url-input"
                 className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-3 focus:border-[#FF6A00] focus:outline-none"
-                placeholder="Video URL (or generate below)"
+                placeholder="Paste your video URL here (YouTube, Vimeo, or direct MP4 link)"
               />
+              <p className="text-[#6B7280] text-xs mt-2">
+                Upload your video to a hosting service and paste the direct URL here. 
+                Supported formats: MP4, WebM. For best results use a 4-6 second looping video.
+              </p>
             </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await axios.put(`${API}/settings`, { hero_video_url: settings.hero_video_url }, { withCredentials: true });
+                  toast.success("Video URL saved successfully!");
+                } catch (error) {
+                  toast.error("Failed to save video URL");
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+              className="w-full bg-[#FF6A00] text-white font-bold text-sm uppercase tracking-wider px-6 py-3 flex items-center justify-center gap-2 hover:bg-white hover:text-[#1A1A1A] transition-colors disabled:opacity-50"
+            >
+              {saving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
+              Save Video URL
+            </button>
 
             {settings.hero_video_url && (
               <div>
@@ -182,6 +207,7 @@ export default function AdminSettings() {
                   autoPlay
                   muted
                   loop
+                  playsInline
                   className="w-full h-48 object-cover bg-[#0F0F0F]"
                 />
               </div>
@@ -189,10 +215,10 @@ export default function AdminSettings() {
 
             <div className="border-t border-white/5 pt-6">
               <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase text-white mb-4">
-                Generate New Video
+                AI Video Generation (Optional)
               </h3>
               <p className="text-[#6B7280] text-sm mb-4">
-                Use AI (Sora 2) to generate a new hero video for your website. 
+                Alternatively, use AI (Sora 2) to generate a new hero video. 
                 This process may take 2-5 minutes.
               </p>
 

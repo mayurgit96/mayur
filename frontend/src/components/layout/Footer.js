@@ -95,6 +95,7 @@ export default function Footer() {
               © {new Date().getFullYear()} Mayur Abrasives. All rights reserved.
             </p>
             <div className="flex gap-6">
+              <Link to="/admin/login" className="text-[#6B7280] hover:text-white text-sm">Admin Login</Link>
               <Link to="#" className="text-[#6B7280] hover:text-white text-sm">Privacy Policy</Link>
               <Link to="#" className="text-[#6B7280] hover:text-white text-sm">Terms of Service</Link>
             </div>

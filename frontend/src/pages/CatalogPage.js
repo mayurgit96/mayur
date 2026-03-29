@@ -4,49 +4,49 @@ import { Download, FileText, Eye } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Default catalogs (shown when no catalogs in database)
+// Default catalogs with the actual uploaded brochure
 const defaultCatalogs = [
   {
     id: "1",
-    name: "Complete Product Catalog 2024",
+    name: "Mayur Complete Product Brochure 2024",
     category: "All Products",
     preview_image: "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   },
   {
     id: "2",
     name: "Cutting Wheels Collection",
     category: "Cutting Wheels",
     preview_image: "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   },
   {
     id: "3",
     name: "Grinding Wheels Collection",
     category: "Grinding Wheels",
     preview_image: "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   },
   {
     id: "4",
     name: "Flap Discs & Finishing",
     category: "Flap Discs",
     preview_image: "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   },
   {
     id: "5",
     name: "Saw Blades - TCT & Diamond",
     category: "Saw Blades",
     preview_image: "https://images.pexels.com/photos/1205434/pexels-photo-1205434.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   },
   {
     id: "6",
     name: "Buffing & Polishing Guide",
     category: "Buffing & Polishing",
     preview_image: "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg",
-    file_url: "#"
+    file_url: "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/iihm4ydn_Mayur%20New%20Brochure-1.pdf"
   }
 ];
 
