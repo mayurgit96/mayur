@@ -1,0 +1,48 @@
+{
+  "theme": "dark",
+  "archetype": "4 (Swiss & High-Contrast - Industrial Variant)",
+  "color_system": {
+    "primary": "#0F3D2E",
+    "accent": "#FF6A00",
+    "background_dark": "#1A1A1A",
+    "text_secondary": "#6B7280",
+    "base": "#FFFFFF"
+  },
+  "typography": {
+    "heading_font": "Barlow Condensed",
+    "body_font": "IBM Plex Sans",
+    "scales": {
+      "h1": "text-5xl md:text-6xl+ font-black uppercase tracking-tighter text-white",
+      "h2": "text-3xl md:text-5xl font-bold uppercase tracking-tight text-white",
+      "h3": "text-xl md:text-2xl font-bold uppercase text-white",
+      "body": "text-base leading-relaxed text-[#6B7280]",
+      "overline": "text-sm font-bold uppercase tracking-[0.2em] text-[#FF6A00]"
+    }
+  },
+  "layout_spacing": {
+    "padding": "px-6 md:px-12 lg:px-24",
+    "section_gap": "py-24 md:py-32",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8",
+    "radius": "rounded-none md:rounded-sm"
+  },
+  "surfaces": {
+    "header": "bg-[#1A1A1A]/80 backdrop-blur-xl border-b border-white/10 z-50",
+    "card": "bg-[#222222] border border-white/5 hover:border-[#FF6A00]/50 transition-colors duration-300 p-8",
+    "button_primary": "bg-[#FF6A00] text-white font-bold uppercase tracking-widest px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors",
+    "button_secondary": "border border-[#6B7280] text-white font-bold uppercase tracking-widest px-8 py-4 hover:border-white transition-colors"
+  },
+  "media_assets": {
+    "hero_background": "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "worker_grinder": "https://images.pexels.com/photos/35378172/pexels-photo-35378172.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "manufacturing_plant": "https://images.pexels.com/photos/34718930/pexels-photo-34718930.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "cnc_tools": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "b2b_handshake": "https://images.pexels.com/photos/6077554/pexels-photo-6077554.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+  },
+  "instructions_to_main_agent": {
+    "testing": "CRITICAL: All interactive elements (buttons, links, inputs) and key data points MUST include data-testid attributes in kebab-case format (e.g. data-testid='hero-cta-button').",
+    "marketing_pages": "Use pure HTML/Tailwind for layouts. No Shadcn cards for public pages to ensure creative freedom. Use large asymmetric grids and dark overlays (bg-black/50 maximum) on images.",
+    "dashboard_admin": "Use Shadcn UI components for data density. Keep it flat, #1A1A1A backgrounds with 1px border. No soft shadows.",
+    "icons": "Use lucide-react for all standard icons, ensuring a crisp technical feel.",
+    "fonts": "Import Barlow Condensed and IBM Plex Sans from Google Fonts in index.css or layout."
+  }
+}
