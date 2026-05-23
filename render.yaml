@@ -1,11 +1,14 @@
-# Deploy the FastAPI backend on Render (free tier works for testing).
-# MongoDB: use MongoDB Atlas (free M0 cluster) — see DEPLOYMENT.md
+# Deploy frontend + backend on Render from one repo.
+# MongoDB: use MongoDB Atlas — set MONGO_URL when prompted by Blueprint.
+# GitHub: https://github.com/mayurgit96/mayur
 
 services:
+  # ── Backend (FastAPI) ─────────────────────────────────────────────
   - type: web
     name: mayur-abrasives-api
     runtime: python
     rootDir: backend
+    plan: free
     buildCommand: pip install -r requirements-prod.txt
     startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
@@ -23,4 +26,24 @@ services:
       - key: ADMIN_PASSWORD
         generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        fromService:
+          name: mayur-abrasives-web
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # ── Frontend (React static site) ──────────────────────────────────
+  - type: web
+    name: mayur-abrasives-web
+    runtime: static
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install --legacy-peer-deps && CI=true DISABLE_ESLINT_PLUGIN=true GENERATE_SOURCEMAP=false npm run build
+    staticPublishPath: build
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      - key: REACT_APP_BACKEND_URL
+        fromService:
+          name: mayur-abrasives-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
