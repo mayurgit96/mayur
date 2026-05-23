@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, FolderTree, Tag, Loader } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ImageUploader from "@/components/ImageUploader";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -285,16 +286,13 @@ export default function AdminCategories() {
               <p className="text-[#6B7280] text-xs mt-1">URL-friendly identifier. Used in /products?category=...</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[#6B7280] text-sm mb-2 block">Image URL</label>
-                <input
-                  type="url"
+                <label className="text-[#6B7280] text-sm mb-2 block">Category Image</label>
+                <ImageUploader
                   value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  data-testid="category-image-input"
-                  placeholder="https://..."
-                  className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-2 focus:border-[#FF6A00] focus:outline-none"
+                  onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  testId="category-image"
                 />
               </div>
               <div>

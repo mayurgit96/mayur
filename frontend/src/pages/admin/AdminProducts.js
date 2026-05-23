@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import MultiImageUploader from "@/components/MultiImageUploader";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -16,6 +17,7 @@ const initialFormData = {
   description: "",
   use_cases: [],
   image_url: "",
+  images: [],
   specifications: {},
   is_featured: false,
   is_new: false,
@@ -89,6 +91,7 @@ export default function AdminProducts() {
       description: product.description || "",
       use_cases: product.use_cases || [],
       image_url: product.image_url || "",
+      images: (product.images && product.images.length > 0) ? product.images : (product.image_url ? [product.image_url] : []),
       specifications: product.specifications || {},
       is_featured: product.is_featured || false,
       is_new: product.is_new || false,
@@ -100,11 +103,22 @@ export default function AdminProducts() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Sync primary image: images[0] becomes image_url
+      const galleryImages = (formData.images || []).filter(Boolean);
+      const primaryImage = galleryImages[0] || formData.image_url || "";
+      // Ensure primary is at index 0 of images and not duplicated elsewhere
+      const cleanGallery = [];
+      if (primaryImage) cleanGallery.push(primaryImage);
+      for (const img of galleryImages) {
+        if (img && img !== primaryImage && !cleanGallery.includes(img)) cleanGallery.push(img);
+      }
+      const payload = { ...formData, image_url: primaryImage, images: cleanGallery };
+
       if (editingProduct) {
-        await axios.put(`${API}/products/${editingProduct.id}`, formData, { withCredentials: true });
+        await axios.put(`${API}/products/${editingProduct.id}`, payload, { withCredentials: true });
         toast.success("Product updated successfully!");
       } else {
-        await axios.post(`${API}/products`, formData, { withCredentials: true });
+        await axios.post(`${API}/products`, payload, { withCredentials: true });
         toast.success("Product created successfully!");
       }
       setModalOpen(false);
@@ -371,13 +385,12 @@ export default function AdminProducts() {
             </div>
 
             <div>
-              <label className="text-[#6B7280] text-sm mb-2 block">Image URL</label>
-              <input
-                type="url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
-                className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-2 focus:border-[#FF6A00] focus:outline-none"
+              <label className="text-[#6B7280] text-sm mb-2 block">Product Images (gallery)</label>
+              <MultiImageUploader
+                images={formData.images}
+                onChange={(imgs) => setFormData({ ...formData, images: imgs })}
+                max={10}
+                testId="product-images"
               />
             </div>
 

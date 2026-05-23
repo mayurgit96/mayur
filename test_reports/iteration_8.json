@@ -1,0 +1,40 @@
+{
+  "summary": "Iter 11 (Multi-image gallery + device upload) verified end-to-end. Backend: 13/13 pytest cases in /app/backend/tests/test_product_images.py pass — POST /api/products with images=['A','B','C'] persists & GET returns image_url='A' + images=['A','B','C'] (primary-leading & deduped); PUT updates gallery; backward-compat product with image_url only returns images=[image_url]; /api/upload-image rejects text/plain (400) and >5MB payload (400), accepts image/jpeg / image/png / image/webp with base64 data URLs; seeded product 6a116aa8ca9700945ee3a4ed returns ≥1 image; admin login + /api/categories + /api/pages regressions all green. Frontend public: /products/6a116aa8ca9700945ee3a4ed renders product-gallery, gallery-main-image, gallery-thumbnails, and gallery-thumb-0..3 (count=4); clicking gallery-thumb-2 swaps gallery-main-image src. Frontend admin: /admin/products Add modal opens MultiImageUploader (data-testid=product-images) with product-images-url-input, product-images-add-url-btn, product-images-upload-btn, product-images-file (accept='image/jpeg,image/png,image/webp,image/jpg' multiple=true); adding 3 URLs creates 3 item cards; product-images-item-0-primary-badge present; product-images-item-2-up + product-images-item-1-set-primary correctly reorder (badge follows to index 0); product-images-item-0-up is disabled; product-images-item-0-remove drops to 2 items. Editing the seeded 4-image product pre-populates the gallery with 4 items + primary badge on item-0 (regression for backward compatibility on legacy products). /admin/categories Edit modal renders ImageUploader (data-testid=category-image) with category-image-url / category-image-file (accept='image/jpeg,image/png,image/webp,image/jpg', single-file as expected) / category-image-upload-btn; typing a URL renders category-image-preview + category-image-clear.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_product_images.py",
+    "/app/test_reports/pytest/product_images_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now ~1405 lines. Recommend splitting into routers (products_router.py, pages_router.py, settings_router.py, auth_router.py) and a seeders/ module. Carried over from iter 7 — still not addressed.",
+    "Seed block in server.py startup contains a duplicate dict key on line 1296-1297 ('name': 'Mayur Pro Cutting Wheel 4\"' immediately overwritten by 'name': 'Mayur Pro Cut Off Wheel 4\"'). Python dict literal silently keeps the second; harmless but a code smell — clean up.",
+    "/api/upload-image returns base64 data URLs. For multi-image galleries with 5MB images each, the MongoDB product doc could grow to >25MB total embedded base64 (15MB after base64 inflation per image). Recommend moving to true file storage (S3 / GridFS / static /uploads dir) before this is used in production at scale. Currently OK for admin-controlled small assets.",
+    "ProductCreate / ProductUpdate models: 'images: List[str]' has no max-length validator. Frontend UI advertises '/10 images' limit (visible in screenshot) but backend would accept thousands. Add Field(default_factory=list, max_length=10) on Pydantic side.",
+    "_gallery_from_doc is defined inside server.py (line 356) and partially duplicated inline inside GET /products (lines 405-412). DRY: call _gallery_from_doc(doc) in the list endpoint too.",
+    "CORS allow_origins includes both explicit origins AND '*' alongside allow_credentials=True (line 1028). This is invalid per CORS spec — browsers will reject credentialed requests when Access-Control-Allow-Origin is '*'. Should drop the '*' wildcard (carried-over).",
+    "MultiImageUploader and ImageUploader appear to be reusable now (used in AdminProducts and AdminCategories respectively). Suggest also migrating Settings → Slider Slides editor and CMS section image fields to MultiImageUploader/ImageUploader for consistency; right now those still use individual <input type=url> with custom upload buttons (different UX in different admin screens).",
+    "Frontend: confirm AdminProducts.handleSubmit syncs images[0] -> image_url before POST/PUT (per files_of_reference). Verified at runtime: after reorder/set-primary, saving and re-opening shows the same primary leading the gallery — implementation is correct. Just add a unit test to prevent regression."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_product_images.py (new — 13 pytest cases covering gallery persistence, update, backward-compat, /api/upload-image content-type + size guards, regression smoke)"
+  ],
+  "success_rate": {
+    "backend": "100% (13/13 product-images tests + prior iter7 CMS tests still green)",
+    "frontend": "100% — All required testids verified: product-gallery, gallery-main-image, gallery-thumbnails, gallery-thumb-0..3 with thumbnail-click → main image swap; product-images container + url-input + add-url-btn + upload-btn + file (multi-accept), item cards 0/1/2, primary-badge, item-2-up + item-1-set-primary reorder, item-0-up disabled, item-0-remove decrement; legacy product opens with pre-populated gallery (4 items, primary on index 0); category-image container + url + file + upload-btn + preview + clear all functional."
+  },
+  "test_credentials": "admin@mayur.com / MayurAdmin@2024 — confirmed working.",
+  "seed_data_creation": "Test fixtures create TEST_Gallery_Product and TEST_Legacy_Product via admin POST /api/products and clean them up via DELETE on teardown. No residual data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iter 11 testid cheatsheet — MultiImageUploader (testIdPrefix='product-images' inside AdminProducts modal): product-images (container), product-images-url-input, product-images-add-url-btn, product-images-upload-btn, product-images-file (accept=image/jpeg,image/png,image/webp,image/jpg multiple=true), product-images-item-{i} (image card 0..N-1), product-images-item-{i}-primary-badge (only on index 0), product-images-item-{i}-up (disabled when i==0), product-images-item-{i}-down, product-images-item-{i}-set-primary (not on index 0), product-images-item-{i}-remove. ImageUploader (testIdPrefix='category-image' inside AdminCategories modal): category-image (container), category-image-url, category-image-file (single, accept=image/jpeg,image/png,image/webp,image/jpg), category-image-upload-btn, category-image-preview (img visible when value), category-image-clear (X button visible when value). Public ProductGallery on /products/{id}: product-gallery, gallery-main-image, gallery-thumbnails (rendered only when images.length>1), gallery-thumb-{i} 0..N-1. Backend: GET /api/products and /api/products/{id} return both image_url (string primary) and images (list, primary leading, deduped). _gallery_from_doc helper in server.py handles backward compat for products with only image_url. /api/upload-image is admin-only, returns base64 data URL, accepts image/* under 5MB. Seeded gallery product 6a116aa8ca9700945ee3a4ed has 4 images for visual smoke tests.",
+  "rca of the issue": "N/A — all iter11 spec items pass."
+}

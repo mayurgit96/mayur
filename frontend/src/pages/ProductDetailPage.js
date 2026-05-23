@@ -12,9 +12,11 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
 
   useEffect(() => {
     fetchProduct();
+    setActiveImageIdx(0);
   }, [id]);
 
   const fetchProduct = async () => {
@@ -71,20 +73,8 @@ export default function ProductDetailPage() {
       {/* Product Details */}
       <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-24">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Image */}
-          <div className="bg-[#F8F9FA] overflow-hidden">
-            {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-[400px] lg:h-[500px] object-cover"
-              />
-            ) : (
-              <div className="w-full h-[400px] lg:h-[500px] flex items-center justify-center text-[#6B7280] font-['Inter']">
-                No Image Available
-              </div>
-            )}
-          </div>
+          {/* Image Gallery */}
+          <ProductGallery product={product} activeIdx={activeImageIdx} onChange={setActiveImageIdx} />
 
           {/* Info */}
           <div>
@@ -220,6 +210,56 @@ export default function ProductDetailPage() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function ProductGallery({ product, activeIdx, onChange }) {
+  const images = (product.images && product.images.length > 0)
+    ? product.images
+    : (product.image_url ? [product.image_url] : []);
+  const active = images[activeIdx] || images[0];
+
+  if (images.length === 0) {
+    return (
+      <div data-testid="product-gallery" className="bg-[#F8F9FA] overflow-hidden">
+        <div className="w-full h-[400px] lg:h-[500px] flex items-center justify-center text-[#6B7280] font-['Inter']">
+          No Image Available
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-testid="product-gallery">
+      <div className="bg-[#F8F9FA] overflow-hidden mb-3">
+        <img
+          src={active}
+          alt={product.name}
+          data-testid="gallery-main-image"
+          className="w-full h-[360px] sm:h-[400px] lg:h-[500px] object-cover transition-opacity duration-200"
+        />
+      </div>
+      {images.length > 1 && (
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2" data-testid="gallery-thumbnails">
+          {images.map((src, idx) => (
+            <button
+              key={`${idx}-${src.slice(0, 32)}`}
+              type="button"
+              onClick={() => onChange(idx)}
+              data-testid={`gallery-thumb-${idx}`}
+              aria-label={`View image ${idx + 1}`}
+              className={`aspect-square overflow-hidden border-2 transition-colors ${
+                idx === activeIdx
+                  ? "border-[#FF6A00]"
+                  : "border-transparent hover:border-[#FF6A00]/40"
+              }`}
+            >
+              <img src={src} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

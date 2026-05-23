@@ -73,6 +73,7 @@ class ProductCreate(BaseModel):
     description: str
     use_cases: List[str] = []
     image_url: Optional[str] = None
+    images: List[str] = []
     specifications: dict = {}
     is_featured: bool = False
     is_new: bool = False
@@ -88,6 +89,7 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     use_cases: Optional[List[str]] = None
     image_url: Optional[str] = None
+    images: Optional[List[str]] = None
     specifications: Optional[dict] = None
     is_featured: Optional[bool] = None
     is_new: Optional[bool] = None
@@ -351,6 +353,18 @@ async def get_me(request: Request):
 
 # ==================== PRODUCTS ROUTES ====================
 
+def _gallery_from_doc(doc: dict) -> list:
+    """Build a deduped image gallery list: primary image_url first, then extras."""
+    primary = doc.get("image_url") or ""
+    extras = doc.get("images") or []
+    gallery = []
+    if primary:
+        gallery.append(primary)
+    for u in extras:
+        if u and u not in gallery:
+            gallery.append(u)
+    return gallery
+
 @api_router.get("/products")
 async def get_products(
     category: Optional[str] = None,
@@ -383,11 +397,19 @@ async def get_products(
             {"description": {"$regex": search, "$options": "i"}}
         ]
     
-    products = await db.products.find(query, {"_id": 0, "id": {"$toString": "$_id"}}).to_list(1000)
     # Re-fetch with proper ID conversion
     cursor = db.products.find(query)
     products = []
     async for doc in cursor:
+        primary = doc.get("image_url") or ""
+        extras = doc.get("images") or []
+        # Ensure primary leads the gallery and no dups
+        gallery = []
+        if primary:
+            gallery.append(primary)
+        for u in extras:
+            if u and u not in gallery:
+                gallery.append(u)
         products.append({
             "id": str(doc["_id"]),
             "name": doc.get("name", ""),
@@ -398,7 +420,8 @@ async def get_products(
             "grit": doc.get("grit"),
             "description": doc.get("description", ""),
             "use_cases": doc.get("use_cases", []),
-            "image_url": doc.get("image_url"),
+            "image_url": primary,
+            "images": gallery,
             "specifications": doc.get("specifications", {}),
             "is_featured": doc.get("is_featured", False),
             "is_new": doc.get("is_new", False),
@@ -425,7 +448,8 @@ async def get_product(product_id: str):
         "grit": doc.get("grit"),
         "description": doc.get("description", ""),
         "use_cases": doc.get("use_cases", []),
-        "image_url": doc.get("image_url"),
+        "image_url": doc.get("image_url") or "",
+        "images": _gallery_from_doc(doc),
         "specifications": doc.get("specifications", {}),
         "is_featured": doc.get("is_featured", False),
         "is_new": doc.get("is_new", False),
@@ -451,7 +475,8 @@ async def create_product(data: ProductCreate, request: Request):
         "grit": doc.get("grit"),
         "description": doc.get("description", ""),
         "use_cases": doc.get("use_cases", []),
-        "image_url": doc.get("image_url"),
+        "image_url": doc.get("image_url") or "",
+        "images": _gallery_from_doc(doc),
         "specifications": doc.get("specifications", {}),
         "is_featured": doc.get("is_featured", False),
         "is_new": doc.get("is_new", False),
