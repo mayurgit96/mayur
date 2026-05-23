@@ -52,14 +52,47 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.1 - Feb, 2026 - Hero Slider & Homepage Restructure)
+
+### Hero Image Slider (replaces hero video)
+- [x] Responsive image carousel on homepage with up to 5 images
+- [x] Auto-advance with configurable interval (default 3s, range 2–15s)
+- [x] Prev / Next manual navigation arrows
+- [x] Dot indicators (click to jump to slide)
+- [x] Graceful fallback to default image when no slides configured
+- [x] Component: `/app/frontend/src/components/HeroSlider.js`
+
+### Admin Slider Management
+- [x] 5 image slots with URL input + file upload (max 5MB per image)
+- [x] Live preview thumbnail per slot + clear button
+- [x] Slide interval input
+- [x] `POST /api/upload-image` endpoint (admin-only, base64 data URL response)
+- [x] `slider_images` (List[str]) + `slider_interval` (int) on settings model
+- [x] Backfill on startup for legacy settings docs
+
+### Homepage Restructure
+- [x] New section order: Hero → About → **New Products** → Featured Products → Categories → Why Choose Us → Industries → Testimonials → CTA
+- [x] New Products section with "NEW" badge on cards (Sparkles icon)
+- [x] Pulls from `/api/products?is_new=true&is_active=true`
+
+### Admin Product Form
+- [x] `is_new` toggle alongside existing `is_featured` and `is_active`
+- [x] "New" tag on admin product table
+
+### Footer
+- [x] Verified: no App Store / Play Store / mobile app download links
+
 ## Prioritized Backlog
 
 ### P0 (Must Have - Next)
-- [ ] Generate actual hero video using Sora 2
+- [ ] Upload final, brand-specific slider images via Admin
 - [ ] Add real product images
 - [ ] Upload actual PDF catalogs
 
 ### P1 (Should Have)
+- [ ] Pause-slider-on-hover + prefers-reduced-motion handling (a11y)
+- [ ] Move image storage from base64 in DB to filesystem/object storage
+- [ ] Split server.py into modules (auth, products, settings, uploads)
 - [ ] Product comparison tool
 - [ ] Dealer locator with map
 - [ ] Advanced analytics dashboard
