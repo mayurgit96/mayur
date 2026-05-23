@@ -76,8 +76,8 @@ export default function MultiImageUploader({ images = [], onChange, max = 10, te
           toast.error(`${file.name}: only JPG/PNG/WEBP allowed — skipped`);
           continue;
         }
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name}: larger than 5MB — skipped`);
+        if (file.size > 100 * 1024 * 1024) {
+          toast.error(`${file.name}: larger than 100MB — skipped`);
           continue;
         }
         try {
@@ -152,7 +152,7 @@ export default function MultiImageUploader({ images = [], onChange, max = 10, te
       </div>
 
       <p className="text-[#6B7280] text-xs">
-        JPG / PNG / WEBP up to 5MB each. {safeImages.length}/{max} images. Tip: the first image is shown as the primary.
+        JPG / PNG / WEBP up to 100MB each. {safeImages.length}/{max} images. Tip: the first image is shown as the primary.
       </p>
 
       {/* Gallery */}

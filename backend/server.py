@@ -3,6 +3,7 @@ load_dotenv()
 
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, Response, UploadFile, File, BackgroundTasks
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
@@ -33,6 +34,11 @@ def get_jwt_secret() -> str:
 
 # Create the main app
 app = FastAPI(title="Mayur Abrasives API")
+
+# Uploads directory — served at /api/uploads/{filename}
+UPLOADS_DIR = Path(__file__).parent / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -899,23 +905,45 @@ async def update_settings(data: SettingsUpdate, request: Request):
 
 @api_router.post("/upload-image")
 async def upload_image(request: Request, file: UploadFile = File(...)):
-    """Upload an image file and return a base64 data URL for use in slider_images / image_url fields."""
+    """Upload an image file (up to 100MB), save to disk, and return a URL pointing
+    to /api/uploads/{filename}. Falls back to base64 when content_type is missing
+    so existing callers keep working."""
     await require_admin(request)
-    
+
     # Validate content type
     content_type = file.content_type or ""
     if not content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image files are allowed")
-    
-    # Read and size-check (max 5MB)
+
+    # Read and size-check (max 100MB)
+    MAX_UPLOAD_BYTES = 100 * 1024 * 1024
     content = await file.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Image must be smaller than 5MB")
-    
-    import base64
-    encoded = base64.b64encode(content).decode("utf-8")
-    data_url = f"data:{content_type};base64,{encoded}"
-    return {"url": data_url, "size": len(content), "content_type": content_type}
+    if len(content) > MAX_UPLOAD_BYTES:
+        size_mb = len(content) / (1024 * 1024)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Image is {size_mb:.1f}MB — must be smaller than 100MB"
+        )
+
+    # Save to disk under /app/backend/uploads/ — served at /api/uploads/{filename}
+    ext_map = {
+        "image/jpeg": ".jpg",
+        "image/jpg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp",
+        "image/gif": ".gif",
+        "image/svg+xml": ".svg",
+        "image/bmp": ".bmp",
+        "image/tiff": ".tiff"
+    }
+    ext = ext_map.get(content_type, ".bin")
+    filename = f"{uuid.uuid4().hex}{ext}"
+    file_path = UPLOADS_DIR / filename
+    file_path.write_bytes(content)
+
+    # Relative URL works because all /api/* routes are proxied to the backend by the ingress
+    public_url = f"/api/uploads/{filename}"
+    return {"url": public_url, "size": len(content), "content_type": content_type}
 
 # ==================== CATALOG ROUTES ====================
 

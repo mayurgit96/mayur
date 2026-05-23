@@ -36,8 +36,8 @@ export default function ImageUploader({
       toast.error("Only JPG, PNG, or WEBP images are supported");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Image must be smaller than 100MB");
       return;
     }
     setUploading(true);

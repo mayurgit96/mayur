@@ -87,8 +87,8 @@ export default function AdminSettings() {
       toast.error("Please select an image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Image must be smaller than 100MB");
       return;
     }
     setUploadingLogo(true);
@@ -121,8 +121,8 @@ export default function AdminSettings() {
       toast.error("Please select an image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Image must be smaller than 100MB");
       return;
     }
     const key = `${idx}-${variant}`;
@@ -253,7 +253,7 @@ export default function AdminSettings() {
                     </button>
                   )}
                 </div>
-                <p className="text-[#6B7280] text-xs">PNG/JPG, max 5MB. Save Settings after upload to persist.</p>
+                <p className="text-[#6B7280] text-xs">PNG/JPG/WEBP, max 100MB. Save Settings after upload to persist.</p>
               </div>
             </div>
 

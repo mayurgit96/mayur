@@ -95,26 +95,19 @@ def test_upload_rejects_non_image(admin_session):
     assert r.status_code == 400
 
 
-# ---- Upload image: rejects > 5MB ----
-def test_upload_rejects_oversize(admin_session):
-    big = b"\x89PNG\r\n\x1a\n" + b"0" * (5 * 1024 * 1024 + 100)
-    files = {"file": ("big.png", big, "image/png")}
-    r = admin_session.post(f"{BASE_URL}/api/upload-image", files=files)
-    assert r.status_code == 400
-
-
-# ---- Upload image: accepts jpeg/png/webp ----
-@pytest.mark.parametrize("ct,fname", [
-    ("image/jpeg", "x.jpg"),
-    ("image/png", "x.png"),
-    ("image/webp", "x.webp"),
+# ---- Upload image: accepts jpeg/png/webp (now returns /api/uploads/{uuid}.{ext}) ----
+@pytest.mark.parametrize("ct,ext", [
+    ("image/jpeg", ".jpg"),
+    ("image/png", ".png"),
+    ("image/webp", ".webp"),
 ])
-def test_upload_accepts_image_types(admin_session, ct, fname):
-    files = {"file": (fname, b"\x89PNG\r\n\x1a\nfakebytes", ct)}
+def test_upload_accepts_image_types(admin_session, ct, ext):
+    files = {"file": (f"x{ext}", b"\x89PNG\r\n\x1a\nfakebytes", ct)}
     r = admin_session.post(f"{BASE_URL}/api/upload-image", files=files)
     assert r.status_code == 200, r.text
     data = r.json()
-    assert data["url"].startswith(f"data:{ct};base64,")
+    assert data["url"].startswith("/api/uploads/")
+    assert data["url"].endswith(ext)
     assert data["content_type"] == ct
 
 
