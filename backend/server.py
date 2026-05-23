@@ -966,82 +966,43 @@ async def startup_event():
     if categories_count == 0:
         default_categories = [
             {
-                "name": "Cutting Wheels",
-                "slug": "cutting-wheels",
-                "description": "Precision metal cutting wheels",
+                "name": "Abrasives",
+                "slug": "abrasives",
+                "description": "Cut off wheels, grinding wheels, flap discs and more",
                 "image_url": "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
                 "subcategories": [
-                    {"name": "4 inch", "slug": "4-inch"},
-                    {"name": "5 inch", "slug": "5-inch"},
-                    {"name": "7 inch", "slug": "7-inch"},
-                    {"name": "14 inch", "slug": "14-inch"}
+                    {"name": "Cut Off Wheels", "slug": "cut-off-wheels"},
+                    {"name": "Grinding Wheels", "slug": "grinding-wheels"},
+                    {"name": "Flap Discs", "slug": "flap-discs"},
+                    {"name": "Non-Woven Wheels", "slug": "non-woven-wheels"},
+                    {"name": "Buffing & Polishing", "slug": "buffing-polishing"}
                 ],
                 "sort_order": 1,
                 "created_at": datetime.now(timezone.utc).isoformat()
             },
             {
-                "name": "Grinding Wheels",
-                "slug": "grinding-wheels",
-                "description": "Heavy-duty grinding wheels",
-                "image_url": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
-                "subcategories": [
-                    {"name": "4 inch", "slug": "4-inch"},
-                    {"name": "7 inch", "slug": "7-inch"}
-                ],
-                "sort_order": 2,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            {
-                "name": "Flap Discs",
-                "slug": "flap-discs",
-                "description": "Blending and finishing flap discs",
-                "image_url": "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
-                "subcategories": [
-                    {"name": "Metal Flap", "slug": "metal-flap"},
-                    {"name": "Fiber Flap", "slug": "fiber-flap"},
-                    {"name": "Vertical", "slug": "vertical"},
-                    {"name": "Flexible", "slug": "flexible"}
-                ],
-                "sort_order": 3,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            {
                 "name": "Saw Blades",
                 "slug": "saw-blades",
-                "description": "TCT, Diamond, and specialty saw blades",
+                "description": "TCT, Diamond and specialty saw blades",
                 "image_url": "https://images.pexels.com/photos/1205434/pexels-photo-1205434.jpeg",
                 "subcategories": [
                     {"name": "TCT", "slug": "tct"},
                     {"name": "Diamond", "slug": "diamond"},
                     {"name": "Marble & Granite", "slug": "marble-granite"}
                 ],
-                "sort_order": 4,
+                "sort_order": 2,
                 "created_at": datetime.now(timezone.utc).isoformat()
             },
             {
-                "name": "Non-Woven Wheels",
-                "slug": "non-woven-wheels",
-                "description": "Surface conditioning and polishing wheels",
-                "image_url": "https://images.pexels.com/photos/1108101/pexels-photo-1108101.jpeg",
+                "name": "Power Tools Accessories",
+                "slug": "power-tools-accessories",
+                "description": "Accessories and consumables for power tools",
+                "image_url": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
                 "subcategories": [
-                    {"name": "Standard", "slug": "standard"},
-                    {"name": "Fine", "slug": "fine"},
-                    {"name": "Ultra Fine", "slug": "ultra-fine"}
+                    {"name": "Drill Bits", "slug": "drill-bits"},
+                    {"name": "Wire Brushes", "slug": "wire-brushes"}
                 ],
-                "sort_order": 5,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            },
-            {
-                "name": "Buffing & Polishing",
-                "slug": "buffing-polishing",
-                "description": "Buffing wheels and polishing compounds",
-                "image_url": "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg",
-                "subcategories": [
-                    {"name": "Felt Buff", "slug": "felt-buff"},
-                    {"name": "Polishing Compound", "slug": "polishing-compound"},
-                    {"name": "Abrasive Paper", "slug": "abrasive-paper"}
-                ],
-                "sort_order": 6,
+                "sort_order": 3,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
         ]
@@ -1054,20 +1015,24 @@ async def startup_event():
         sample_products = [
             {
                 "name": "Mayur Pro Cutting Wheel 4\"",
-                "category": "cutting-wheels",
+                "name": "Mayur Pro Cut Off Wheel 4\"",
+                "category": "abrasives",
+                "subcategory": "cut-off-wheels",
                 "size": "4\"",
                 "thickness": "1.2mm",
-                "description": "High-performance cutting wheel for metal cutting. Ideal for precision cuts on steel, iron, and stainless steel.",
+                "description": "High-performance cut off wheel for metal cutting. Ideal for precision cuts on steel, iron, and stainless steel.",
                 "use_cases": ["Metal Cutting", "Steel Fabrication", "Pipe Cutting"],
                 "image_url": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
                 "specifications": {"max_rpm": "13300", "arbor_size": "16mm", "material": "Aluminum Oxide"},
                 "is_featured": True,
+                "is_new": True,
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc).isoformat()
             },
             {
                 "name": "Mayur Plus Grinding Wheel 7\"",
-                "category": "grinding-wheels",
+                "category": "abrasives",
+                "subcategory": "grinding-wheels",
                 "size": "7\"",
                 "thickness": "6mm",
                 "description": "Heavy-duty grinding wheel for aggressive metal removal. Perfect for weld grinding and surface preparation.",
@@ -1075,13 +1040,14 @@ async def startup_event():
                 "image_url": "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
                 "specifications": {"max_rpm": "8500", "arbor_size": "22mm", "material": "Zirconia Alumina"},
                 "is_featured": True,
+                "is_new": True,
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc).isoformat()
             },
             {
                 "name": "Mayur Flap Disc 4\" - 80 Grit",
-                "category": "flap-discs",
-                "subcategory": "metal-flap",
+                "category": "abrasives",
+                "subcategory": "flap-discs",
                 "size": "4\"",
                 "grit": "80",
                 "description": "Premium flap disc for blending and finishing. Provides smooth finish on metal surfaces.",
@@ -1089,6 +1055,7 @@ async def startup_event():
                 "image_url": "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
                 "specifications": {"max_rpm": "13300", "arbor_size": "16mm", "backing": "Fiberglass"},
                 "is_featured": True,
+                "is_new": True,
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc).isoformat()
             },
@@ -1120,7 +1087,8 @@ async def startup_event():
             },
             {
                 "name": "Mayur Non-Woven Wheel 6\"",
-                "category": "non-woven-wheels",
+                "category": "abrasives",
+                "subcategory": "non-woven-wheels",
                 "size": "6\"",
                 "grit": "Fine",
                 "description": "Non-woven finishing wheel for polishing and surface conditioning. Creates satin finish.",
