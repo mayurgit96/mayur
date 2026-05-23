@@ -52,6 +52,30 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.2 - Feb, 2026 - Categories Module + Footer Redesign)
+
+### Homepage
+- [x] Removed "Industries We Serve" section entirely
+- [x] Categories section now reads from DB-backed `/api/categories` (admin-managed)
+
+### Footer Redesign
+- [x] New 4-column layout: Contact Info | Map (iframe) | For Query (inquiry form) | Follow Us
+- [x] Working inquiry form (POSTs to `/api/inquiries`)
+- [x] 6 social icons (Facebook, Instagram, LinkedIn, YouTube, X/Twitter, WhatsApp)
+- [x] Verified: no App Store / Play Store / mobile app download links anywhere
+
+### Admin Categories Module (NEW)
+- [x] `/admin/categories` page with grid of category cards (image, name, slug, subcategory chips)
+- [x] Create, edit, delete categories — auto-slugify from name, configurable slug, image_url, description, sort_order
+- [x] Manage subcategories per category (add/remove chips inside the modal)
+- [x] Backend: `GET/POST/PUT/DELETE /api/categories`, `POST/DELETE /api/categories/{id}/subcategories[/{sub_slug}]`
+- [x] 6 default categories seeded on first boot
+- [x] Slug uniqueness enforced (400 on duplicate); duplicate subcategory slug also blocked
+
+### Admin Products (UPDATED)
+- [x] Category dropdown now populated dynamically from `/api/categories`
+- [x] New Subcategory dropdown appears when selected category has subcategories
+
 ## What's Been Implemented (v1.1 - Feb, 2026 - Hero Slider & Homepage Restructure)
 
 ### Hero Image Slider (replaces hero video)

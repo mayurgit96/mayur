@@ -454,8 +454,10 @@ async def delete_product(product_id: str, request: Request):
 def _slugify(text: str) -> str:
     import re
     s = (text or "").strip().lower()
+    # Convert underscores to spaces first so they become hyphens
+    s = s.replace("_", " ")
     s = re.sub(r"[^a-z0-9\s-]", "", s)
-    s = re.sub(r"[\s_]+", "-", s)
+    s = re.sub(r"[\s]+", "-", s)
     s = re.sub(r"-+", "-", s).strip("-")
     return s or "category"
 
@@ -562,14 +564,18 @@ async def add_subcategory(category_id: str, data: SubcategoryCreate, request: Re
     await require_admin(request)
     sub_slug = (data.slug or _slugify(data.name)).strip().lower()
     try:
-        result = await db.categories.update_one(
-            {"_id": ObjectId(category_id)},
-            {"$push": {"subcategories": {"name": data.name, "slug": sub_slug}}}
-        )
+        category = await db.categories.find_one({"_id": ObjectId(category_id)})
     except Exception:
         raise HTTPException(status_code=404, detail="Category not found")
-    if result.matched_count == 0:
+    if not category:
         raise HTTPException(status_code=404, detail="Category not found")
+    # Guard against duplicate subcategory slug within the same category
+    if any(s.get("slug") == sub_slug for s in category.get("subcategories", [])):
+        raise HTTPException(status_code=400, detail=f"Subcategory '{sub_slug}' already exists")
+    await db.categories.update_one(
+        {"_id": ObjectId(category_id)},
+        {"$push": {"subcategories": {"name": data.name, "slug": sub_slug}}}
+    )
     doc = await db.categories.find_one({"_id": ObjectId(category_id)})
     return _category_to_dict(doc)
 
