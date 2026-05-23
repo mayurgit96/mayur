@@ -8,7 +8,6 @@ services:
     name: mayur-abrasives-api
     runtime: python
     rootDir: backend
-    plan: free
     buildCommand: pip install -r requirements-prod.txt
     startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
@@ -36,7 +35,6 @@ services:
     name: mayur-abrasives-web
     runtime: static
     rootDir: frontend
-    plan: free
     buildCommand: npm install --legacy-peer-deps && CI=true DISABLE_ESLINT_PLUGIN=true GENERATE_SOURCEMAP=false npm run build
     staticPublishPath: build
     envVars:
