@@ -1,26 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { Save, Loader, Upload, X, Image as ImageIcon } from "lucide-react";
+import { Save, Loader, Upload, X, Image as ImageIcon, Monitor, Smartphone } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const SLIDER_SLOT_COUNT = 5;
+
+const emptySlide = () => ({ desktop: "", mobile: "" });
 
 export default function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingSlider, setSavingSlider] = useState(false);
-  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [uploadingKey, setUploadingKey] = useState(null); // e.g. "0-desktop"
   const [settings, setSettings] = useState({
     whatsapp_number: "",
     company_email: "",
     company_phone: "",
     company_address: "",
     google_maps_embed: "",
-    slider_images: [],
+    slider_slides: Array.from({ length: SLIDER_SLOT_COUNT }, emptySlide),
     slider_interval: 3
   });
-  const fileInputRefs = useRef([]);
+  const fileInputRefs = useRef({});
 
   useEffect(() => {
     fetchSettings();
@@ -29,15 +31,19 @@ export default function AdminSettings() {
   const fetchSettings = async () => {
     try {
       const { data } = await axios.get(`${API}/settings`);
-      // Pad slider images to fixed slot count
-      const images = Array.from({ length: SLIDER_SLOT_COUNT }, (_, i) => (data.slider_images || [])[i] || "");
+      // Pad slides to fixed slot count
+      const incoming = Array.isArray(data.slider_slides) ? data.slider_slides : [];
+      const slides = Array.from({ length: SLIDER_SLOT_COUNT }, (_, i) => ({
+        desktop: incoming[i]?.desktop || "",
+        mobile: incoming[i]?.mobile || ""
+      }));
       setSettings({
         whatsapp_number: data.whatsapp_number || "",
         company_email: data.company_email || "",
         company_phone: data.company_phone || "",
         company_address: data.company_address || "",
         google_maps_embed: data.google_maps_embed || "",
-        slider_images: images,
+        slider_slides: slides,
         slider_interval: data.slider_interval || 3
       });
     } catch (error) {
@@ -47,18 +53,21 @@ export default function AdminSettings() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleCompanySubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = {
-        whatsapp_number: settings.whatsapp_number,
-        company_email: settings.company_email,
-        company_phone: settings.company_phone,
-        company_address: settings.company_address,
-        google_maps_embed: settings.google_maps_embed
-      };
-      await axios.put(`${API}/settings`, payload, { withCredentials: true });
+      await axios.put(
+        `${API}/settings`,
+        {
+          whatsapp_number: settings.whatsapp_number,
+          company_email: settings.company_email,
+          company_phone: settings.company_phone,
+          company_address: settings.company_address,
+          google_maps_embed: settings.google_maps_embed
+        },
+        { withCredentials: true }
+      );
       toast.success("Company settings saved!");
     } catch (error) {
       toast.error("Failed to save settings");
@@ -67,13 +76,14 @@ export default function AdminSettings() {
     }
   };
 
-  const handleSliderImageChange = (idx, value) => {
-    const newImages = [...settings.slider_images];
-    newImages[idx] = value;
-    setSettings({ ...settings, slider_images: newImages });
+  const updateSlide = (idx, variant, value) => {
+    const slides = settings.slider_slides.map((s, i) =>
+      i === idx ? { ...s, [variant]: value } : s
+    );
+    setSettings({ ...settings, slider_slides: slides });
   };
 
-  const handleFileUpload = async (idx, file) => {
+  const handleFileUpload = async (idx, variant, file) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
@@ -83,7 +93,8 @@ export default function AdminSettings() {
       toast.error("Image must be smaller than 5MB");
       return;
     }
-    setUploadingIdx(idx);
+    const key = `${idx}-${variant}`;
+    setUploadingKey(key);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -91,28 +102,30 @@ export default function AdminSettings() {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" }
       });
-      handleSliderImageChange(idx, data.url);
-      toast.success(`Image ${idx + 1} uploaded`);
+      updateSlide(idx, variant, data.url);
+      toast.success(`Slide ${idx + 1} ${variant} image uploaded`);
     } catch (error) {
       toast.error(error.response?.data?.detail || "Upload failed");
     } finally {
-      setUploadingIdx(null);
+      setUploadingKey(null);
     }
   };
 
-  const clearSliderImage = (idx) => {
-    handleSliderImageChange(idx, "");
+  const clearSlideImage = (idx, variant) => {
+    updateSlide(idx, variant, "");
   };
 
   const saveSliderSettings = async () => {
     setSavingSlider(true);
     try {
-      // Only send non-empty images, preserving order
-      const cleanedImages = settings.slider_images.filter((img) => img && img.trim());
+      // Keep only slides that have at least a desktop image (mobile optional)
+      const cleaned = settings.slider_slides
+        .map((s) => ({ desktop: (s.desktop || "").trim(), mobile: (s.mobile || "").trim() }))
+        .filter((s) => s.desktop || s.mobile);
       const intervalNum = Math.max(2, Math.min(15, parseInt(settings.slider_interval) || 3));
       await axios.put(
         `${API}/settings`,
-        { slider_images: cleanedImages, slider_interval: intervalNum },
+        { slider_slides: cleaned, slider_interval: intervalNum },
         { withCredentials: true }
       );
       toast.success("Slider settings saved!");
@@ -144,7 +157,7 @@ export default function AdminSettings() {
             Company Information
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleCompanySubmit} className="space-y-6">
             <div>
               <label className="text-[#6B7280] text-sm mb-2 block">WhatsApp Number</label>
               <input
@@ -221,7 +234,8 @@ export default function AdminSettings() {
             Hero Image Slider
           </h2>
           <p className="text-[#6B7280] text-sm mb-6">
-            Manage up to {SLIDER_SLOT_COUNT} images shown on the homepage hero slider. Add a URL or upload a file (max 5MB).
+            Manage up to {SLIDER_SLOT_COUNT} slides. Each slide can have separate <strong className="text-white">Desktop</strong> and{" "}
+            <strong className="text-white">Mobile</strong> banner images. Mobile is optional — if blank, the desktop image is shown on mobile too.
           </p>
 
           <div className="space-y-5">
@@ -237,80 +251,63 @@ export default function AdminSettings() {
                 data-testid="slider-interval-input"
                 className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-3 focus:border-[#FF6A00] focus:outline-none"
               />
-              <p className="text-[#6B7280] text-xs mt-1">Time between auto-transitions (2-15 seconds)</p>
+              <p className="text-[#6B7280] text-xs mt-1">Time between auto-transitions (2–15 seconds)</p>
             </div>
 
-            {/* Slider Image Slots */}
-            <div className="space-y-4 max-h-[520px] overflow-y-auto pr-2">
-              {settings.slider_images.map((imgUrl, idx) => (
+            {/* Slides */}
+            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+              {settings.slider_slides.map((slide, idx) => (
                 <div
                   key={idx}
                   data-testid={`slider-slot-${idx}`}
-                  className="bg-[#0F0F0F] border border-white/10 p-4 space-y-3"
+                  className="bg-[#0F0F0F] border border-white/10 p-4 space-y-4"
                 >
                   <div className="flex items-center justify-between">
-                    <label className="text-white text-sm font-semibold">Image {idx + 1}</label>
-                    {imgUrl && (
+                    <p className="text-white text-sm font-bold uppercase tracking-wider">
+                      Slide {idx + 1}
+                    </p>
+                    {(slide.desktop || slide.mobile) && (
                       <button
                         type="button"
-                        onClick={() => clearSliderImage(idx)}
-                        data-testid={`slider-slot-${idx}-clear`}
-                        className="text-[#6B7280] hover:text-red-500 transition-colors"
-                        aria-label={`Clear image ${idx + 1}`}
+                        onClick={() => {
+                          updateSlide(idx, "desktop", "");
+                          updateSlide(idx, "mobile", "");
+                        }}
+                        data-testid={`slider-slot-${idx}-clear-all`}
+                        className="text-[#6B7280] hover:text-red-500 text-xs uppercase tracking-wider transition-colors"
                       >
-                        <X size={16} />
+                        Clear slide
                       </button>
                     )}
                   </div>
 
-                  {/* Preview */}
-                  <div className="w-full h-32 bg-[#1A1A1A] border border-white/5 flex items-center justify-center overflow-hidden">
-                    {imgUrl ? (
-                      <img src={imgUrl} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon size={32} className="text-[#3A3A3A]" />
-                    )}
-                  </div>
-
-                  {/* URL input */}
-                  <input
-                    type="text"
-                    value={imgUrl}
-                    onChange={(e) => handleSliderImageChange(idx, e.target.value)}
-                    data-testid={`slider-slot-${idx}-url`}
-                    placeholder="Paste image URL or upload below"
-                    className="w-full bg-[#1A1A1A] border border-white/10 text-white px-3 py-2 text-sm focus:border-[#FF6A00] focus:outline-none"
-                  />
-
-                  {/* File upload */}
-                  <div className="flex gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      ref={(el) => (fileInputRefs.current[idx] = el)}
-                      onChange={(e) => handleFileUpload(idx, e.target.files?.[0])}
-                      className="hidden"
-                      data-testid={`slider-slot-${idx}-file`}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Desktop variant */}
+                    <SlideImageField
+                      idx={idx}
+                      variant="desktop"
+                      icon={<Monitor size={14} />}
+                      label="Desktop Banner"
+                      value={slide.desktop}
+                      onChange={(v) => updateSlide(idx, "desktop", v)}
+                      onClear={() => clearSlideImage(idx, "desktop")}
+                      onFile={(file) => handleFileUpload(idx, "desktop", file)}
+                      uploading={uploadingKey === `${idx}-desktop`}
+                      fileInputRefs={fileInputRefs}
                     />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRefs.current[idx]?.click()}
-                      disabled={uploadingIdx === idx}
-                      data-testid={`slider-slot-${idx}-upload-btn`}
-                      className="flex-1 border border-white/10 text-white text-xs uppercase tracking-wider py-2 px-3 flex items-center justify-center gap-2 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors disabled:opacity-50"
-                    >
-                      {uploadingIdx === idx ? (
-                        <>
-                          <Loader className="animate-spin" size={14} />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload size={14} />
-                          Upload from device
-                        </>
-                      )}
-                    </button>
+                    {/* Mobile variant */}
+                    <SlideImageField
+                      idx={idx}
+                      variant="mobile"
+                      icon={<Smartphone size={14} />}
+                      label="Mobile Banner"
+                      value={slide.mobile}
+                      onChange={(v) => updateSlide(idx, "mobile", v)}
+                      onClear={() => clearSlideImage(idx, "mobile")}
+                      onFile={(file) => handleFileUpload(idx, "mobile", file)}
+                      uploading={uploadingKey === `${idx}-mobile`}
+                      fileInputRefs={fileInputRefs}
+                    />
                   </div>
                 </div>
               ))}
@@ -329,6 +326,96 @@ export default function AdminSettings() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SlideImageField({
+  idx,
+  variant,
+  icon,
+  label,
+  value,
+  onChange,
+  onClear,
+  onFile,
+  uploading,
+  fileInputRefs
+}) {
+  const inputKey = `${idx}-${variant}`;
+  return (
+    <div
+      data-testid={`slider-slot-${idx}-${variant}`}
+      className="bg-[#1A1A1A] border border-white/5 p-3 space-y-2"
+    >
+      <div className="flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-[#FF6A00] text-xs uppercase tracking-wider font-bold">
+          {icon} {label}
+        </span>
+        {value && (
+          <button
+            type="button"
+            onClick={onClear}
+            data-testid={`slider-slot-${idx}-${variant}-clear`}
+            className="text-[#6B7280] hover:text-red-500 transition-colors"
+            aria-label={`Clear ${variant} image for slide ${idx + 1}`}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {/* Preview */}
+      <div
+        className={`w-full ${variant === "mobile" ? "h-28 mx-auto max-w-[140px]" : "h-28"} bg-[#0F0F0F] border border-white/5 flex items-center justify-center overflow-hidden`}
+      >
+        {value ? (
+          <img src={value} alt={`${label} ${idx + 1}`} className="w-full h-full object-cover" />
+        ) : (
+          <ImageIcon size={24} className="text-[#3A3A3A]" />
+        )}
+      </div>
+
+      {/* URL input */}
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        data-testid={`slider-slot-${idx}-${variant}-url`}
+        placeholder="Paste image URL"
+        className="w-full bg-[#0F0F0F] border border-white/10 text-white px-3 py-2 text-xs focus:border-[#FF6A00] focus:outline-none"
+      />
+
+      {/* File upload */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={(el) => {
+          fileInputRefs.current[inputKey] = el;
+        }}
+        onChange={(e) => onFile(e.target.files?.[0])}
+        className="hidden"
+        data-testid={`slider-slot-${idx}-${variant}-file`}
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRefs.current[inputKey]?.click()}
+        disabled={uploading}
+        data-testid={`slider-slot-${idx}-${variant}-upload-btn`}
+        className="w-full border border-white/10 text-white text-[11px] uppercase tracking-wider py-1.5 px-2 flex items-center justify-center gap-1 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors disabled:opacity-50"
+      >
+        {uploading ? (
+          <>
+            <Loader className="animate-spin" size={12} />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <Upload size={12} />
+            Upload
+          </>
+        )}
+      </button>
     </div>
   );
 }

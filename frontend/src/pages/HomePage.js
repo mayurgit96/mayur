@@ -91,6 +91,7 @@ export default function HomePage() {
       {/* Hero Section with Image Slider */}
       <section data-testid="hero-section" className="relative h-screen min-h-[700px] flex items-center">
         <HeroSlider
+          slides={settings.slider_slides}
           images={settings.slider_images}
           interval={settings.slider_interval}
         />

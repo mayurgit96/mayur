@@ -174,6 +174,10 @@ class CatalogResponse(BaseModel):
     created_at: str
 
 # Settings Models
+class SliderSlide(BaseModel):
+    desktop: Optional[str] = ""
+    mobile: Optional[str] = ""
+
 class SettingsUpdate(BaseModel):
     whatsapp_number: Optional[str] = None
     company_email: Optional[str] = None
@@ -182,6 +186,7 @@ class SettingsUpdate(BaseModel):
     google_maps_embed: Optional[str] = None
     hero_video_url: Optional[str] = None
     slider_images: Optional[List[str]] = None
+    slider_slides: Optional[List[SliderSlide]] = None
     slider_interval: Optional[int] = None
 
 class SettingsResponse(BaseModel):
@@ -732,14 +737,27 @@ async def get_settings():
             "google_maps_embed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.758977432432!2d75.78745297640383!3d26.91243777665686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db50c6c2e5a7d%3A0x8b7c0c6c6c6c6c6c!2sJaipur%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin",
             "hero_video_url": "",
             "slider_images": [],
+            "slider_slides": [],
             "slider_interval": 3
         }
     # Ensure defaults exist for backward compatibility
     settings.setdefault("slider_images", [])
     settings.setdefault("slider_interval", 3)
     settings.setdefault("hero_video_url", "")
-    # Filter out empty strings from slider images
+    settings.setdefault("slider_slides", [])
+    # Normalize slider_images (filter empties)
     settings["slider_images"] = [img for img in (settings.get("slider_images") or []) if img]
+    # If slider_slides is empty but slider_images has entries, derive on-the-fly (desktop-only legacy)
+    if not settings.get("slider_slides") and settings["slider_images"]:
+        settings["slider_slides"] = [
+            {"desktop": img, "mobile": ""} for img in settings["slider_images"]
+        ]
+    else:
+        # Normalize slides to ensure both keys exist
+        settings["slider_slides"] = [
+            {"desktop": s.get("desktop", "") or "", "mobile": s.get("mobile", "") or ""}
+            for s in (settings.get("slider_slides") or [])
+        ]
     return settings
 
 @api_router.put("/settings")
@@ -748,6 +766,14 @@ async def update_settings(data: SettingsUpdate, request: Request):
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
+    # Normalize slider_slides if provided
+    if "slider_slides" in update_data:
+        update_data["slider_slides"] = [
+            {"desktop": (s.get("desktop") or "").strip(), "mobile": (s.get("mobile") or "").strip()}
+            for s in update_data["slider_slides"]
+        ]
+        # Sync slider_images (desktop URLs) for legacy consumers
+        update_data["slider_images"] = [s["desktop"] for s in update_data["slider_slides"] if s["desktop"]]
     await db.settings.update_one(
         {"type": "global"},
         {"$set": update_data},
@@ -926,6 +952,13 @@ async def startup_event():
     # Seed default settings
     settings = await db.settings.find_one({"type": "global"})
     if not settings:
+        default_slides = [
+            {"desktop": "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg", "mobile": ""},
+            {"desktop": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg", "mobile": ""},
+            {"desktop": "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg", "mobile": ""},
+            {"desktop": "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg", "mobile": ""},
+            {"desktop": "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg", "mobile": ""}
+        ]
         await db.settings.insert_one({
             "type": "global",
             "whatsapp_number": "+919876543210",
@@ -934,13 +967,8 @@ async def startup_event():
             "company_address": "Industrial Area, Jaipur, Rajasthan, India - 302001",
             "google_maps_embed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.758977432432!2d75.78745297640383!3d26.91243777665686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db50c6c2e5a7d%3A0x8b7c0c6c6c2e5a7d!2sJaipur%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin",
             "hero_video_url": "",
-            "slider_images": [
-                "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg",
-                "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
-                "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
-                "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
-                "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg"
-            ],
+            "slider_images": [s["desktop"] for s in default_slides],
+            "slider_slides": default_slides,
             "slider_interval": 3
         })
         logger.info("Default settings created")
@@ -957,6 +985,10 @@ async def startup_event():
             ]
         if "slider_interval" not in settings:
             backfill["slider_interval"] = 3
+        if "slider_slides" not in settings or not settings.get("slider_slides"):
+            # Derive slides from existing slider_images
+            existing_images = settings.get("slider_images") or backfill.get("slider_images") or []
+            backfill["slider_slides"] = [{"desktop": img, "mobile": ""} for img in existing_images if img]
         if backfill:
             await db.settings.update_one({"type": "global"}, {"$set": backfill})
             logger.info(f"Backfilled settings fields: {list(backfill.keys())}")

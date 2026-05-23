@@ -52,6 +52,22 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.3 - Feb, 2026 - Category & Subcategory Navigation)
+
+### Public Product Catalog Drill-Down
+- [x] Reseeded with user's example hierarchy: **Abrasives** (Cut Off Wheels, Grinding Wheels, Flap Discs, Non-Woven Wheels, Buffing & Polishing) + Saw Blades (TCT, Diamond, Marble & Granite) + Power Tools Accessories (Drill Bits, Wire Brushes)
+- [x] `/products` page completely refactored — Category quick-pick strip at top (when no category selected)
+- [x] Clicking a category: title + breadcrumb update, category strip hides, **Subcategory chip strip** appears
+- [x] Clicking a subcategory chip: deep-links to `/products?category=X&subcategory=Y`, filters products, updates breadcrumb (All Products → Abrasives → Cut Off Wheels)
+- [x] Sidebar shows expandable category tree with nested subcategory radio-style buttons
+- [x] All filtering is URL-driven (deep-linkable, shareable)
+- [x] Product cards now show category + subcategory + size tags + "NEW" badge
+- [x] Mobile flyout filter mirrors the desktop tree
+
+### Backend
+- [x] `/api/products` supports `category` + `subcategory` filters (was already supported, now fully utilized)
+- [x] Sample products updated with correct category/subcategory slugs
+
 ## What's Been Implemented (v1.2 - Feb, 2026 - Categories Module + Footer Redesign)
 
 ### Homepage

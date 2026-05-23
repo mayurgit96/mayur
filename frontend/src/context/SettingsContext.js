@@ -14,6 +14,7 @@ export function SettingsProvider({ children }) {
     google_maps_embed: "",
     hero_video_url: "",
     slider_images: [],
+    slider_slides: [],
     slider_interval: 3
   });
 
