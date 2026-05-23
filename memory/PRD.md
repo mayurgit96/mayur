@@ -52,6 +52,26 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.4 - Feb, 2026 - Logo + Clean Hero)
+
+### Brand Logo
+- [x] Real Mayur Plus logo rendered in Navbar (data-testid=navbar-logo-img) — replaces "M" placeholder
+- [x] Same logo in Footer with white-tile background for dark-footer legibility
+- [x] Admin Settings → Brand Logo card with preview, URL input, file upload (5MB cap), clear button
+- [x] Logo URL stored in settings.logo_url; backfilled on startup with user's uploaded Mayur Plus PNG
+- [x] If logo_url is empty, the navbar/footer fall back to the "M MAYUR ABRASIVES" placeholder
+
+### Hero Slider Cleanup
+- [x] Removed ALL overlay text (PREMIUM ABRASIVE SOLUTIONS / POWER THAT SHAPES METAL / PRECISION TRUST / description / Explore + Become Dealer buttons)
+- [x] Hero is now a pure image carousel — only image, prev/next arrows, and dot indicators
+- [x] Hero height responsive: 60vh mobile / 70vh tablet / full screen on desktop
+- [x] HeroSlider gained a `showOverlay` prop so other pages can reuse it with text overlays if needed
+- [x] Navbar background is always solid white (no more transparent-on-homepage state since the dark gradient is gone)
+
+### Backend
+- [x] Fixed iter5 carry-over: PUT /api/settings now filters out fully-empty slides server-side
+- [x] `logo_url` field added to SettingsUpdate model, GET response, and seed defaults
+
 ## What's Been Implemented (v1.3 - Feb, 2026 - Category & Subcategory Navigation)
 
 ### Public Product Catalog Drill-Down
