@@ -27,7 +27,21 @@ export default function Navbar() {
 
   useEffect(() => {
     setMobileOpen(false);
+    // Restore body scroll when menu closes
+    document.body.style.overflow = 'unset';
   }, [location]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileOpen]);
 
   // Check if on homepage for transparent navbar
   const isHomepage = location.pathname === "/";
@@ -42,27 +56,27 @@ export default function Navbar() {
           : "bg-white shadow-md"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <nav className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+        <nav className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3" data-testid="logo-link">
-            <div className="w-10 h-10 bg-[#FF6A00] rounded flex items-center justify-center">
-              <span className="font-['Montserrat'] font-bold text-white text-xl">M</span>
+          <Link to="/" className="flex items-center gap-2 sm:gap-3" data-testid="logo-link">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#FF6A00] rounded flex items-center justify-center">
+              <span className="font-['Montserrat'] font-bold text-white text-lg sm:text-xl">M</span>
             </div>
-            <div>
-              <span className={`font-['Montserrat'] font-bold text-xl tracking-tight ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}>MAYUR</span>
-              <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-xl ml-1">ABRASIVES</span>
+            <div className="hidden xs:block">
+              <span className={`font-['Montserrat'] font-bold text-base sm:text-xl tracking-tight ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}>MAYUR</span>
+              <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-base sm:text-xl ml-1">ABRASIVES</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 data-testid={`nav-${link.name.toLowerCase().replace(" ", "-")}`}
-                className={`nav-link font-['Montserrat'] font-semibold text-sm uppercase tracking-wider transition-colors ${
+                className={`nav-link font-['Montserrat'] font-semibold text-xs xl:text-sm uppercase tracking-wider transition-colors ${
                   location.pathname === link.path 
                     ? "text-[#FF6A00]" 
                     : showTransparent 
@@ -79,7 +93,7 @@ export default function Navbar() {
           <Link
             to="/dealer"
             data-testid="nav-cta-button"
-            className="hidden lg:block bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 py-3 hover:bg-[#0F3D2E] transition-colors"
+            className="hidden lg:block bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-xs xl:text-sm uppercase tracking-widest px-4 xl:px-6 py-2.5 xl:py-3 hover:bg-[#0F3D2E] transition-colors"
           >
             Get Quote
           </Link>
@@ -87,39 +101,51 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             data-testid="mobile-menu-toggle"
-            className={`lg:hidden p-2 ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}
+            className={`lg:hidden p-2 -mr-2 ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </nav>
       </div>
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden fixed inset-0 top-20 bg-white transform transition-transform duration-300 ${
+        className={`lg:hidden fixed inset-0 top-16 sm:top-20 bg-white transform transition-transform duration-300 ease-in-out z-40 ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex flex-col p-6 gap-4">
-          {navLinks.map((link) => (
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="space-y-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  data-testid={`mobile-nav-${link.name.toLowerCase().replace(" ", "-")}`}
+                  className={`block font-['Montserrat'] font-bold text-xl uppercase tracking-wider py-4 border-b border-gray-100 ${
+                    location.pathname === link.path ? "text-[#FF6A00]" : "text-[#1A1A1A]"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
             <Link
-              key={link.path}
-              to={link.path}
-              data-testid={`mobile-nav-${link.name.toLowerCase().replace(" ", "-")}`}
-              className={`font-['Montserrat'] font-bold text-2xl uppercase tracking-wider py-3 border-b border-gray-100 ${
-                location.pathname === link.path ? "text-[#FF6A00]" : "text-[#1A1A1A]"
-              }`}
+              to="/dealer"
+              className="mt-6 block bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-center uppercase tracking-widest px-6 py-4"
             >
-              {link.name}
+              Get Quote
             </Link>
-          ))}
-          <Link
-            to="/dealer"
-            className="mt-4 bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-center uppercase tracking-widest px-6 py-4"
-          >
-            Get Quote
-          </Link>
+          </div>
+          
+          {/* Mobile Menu Footer */}
+          <div className="px-4 py-6 border-t border-gray-100 bg-[#F8F9FA]">
+            <p className="text-[#6B7280] text-sm font-['Inter'] text-center">
+              200+ Dealers Across India
+            </p>
+          </div>
         </div>
       </div>
     </header>

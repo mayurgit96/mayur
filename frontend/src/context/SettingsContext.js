@@ -12,7 +12,9 @@ export function SettingsProvider({ children }) {
     company_phone: "+91-141-2345678",
     company_address: "Industrial Area, Jaipur, Rajasthan, India - 302001",
     google_maps_embed: "",
-    hero_video_url: ""
+    hero_video_url: "",
+    slider_images: [],
+    slider_interval: 3
   });
 
   useEffect(() => {

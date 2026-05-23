@@ -27,6 +27,7 @@ const initialFormData = {
   image_url: "",
   specifications: {},
   is_featured: false,
+  is_new: false,
   is_active: true
 };
 
@@ -80,6 +81,7 @@ export default function AdminProducts() {
       image_url: product.image_url || "",
       specifications: product.specifications || {},
       is_featured: product.is_featured || false,
+      is_new: product.is_new || false,
       is_active: product.is_active !== false
     });
     setModalOpen(true);
@@ -216,9 +218,14 @@ export default function AdminProducts() {
                       </div>
                       <div>
                         <p className="text-white font-medium">{product.name}</p>
-                        {product.is_featured && (
-                          <span className="text-[#FF6A00] text-xs uppercase tracking-wider">Featured</span>
-                        )}
+                        <div className="flex gap-2 mt-0.5">
+                          {product.is_featured && (
+                            <span className="text-[#FF6A00] text-xs uppercase tracking-wider">Featured</span>
+                          )}
+                          {product.is_new && (
+                            <span className="text-green-400 text-xs uppercase tracking-wider">New</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -409,15 +416,26 @@ export default function AdminProducts() {
             </div>
 
             {/* Toggles */}
-            <div className="flex gap-8">
+            <div className="flex flex-wrap gap-6 sm:gap-8">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.is_featured}
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                  data-testid="product-is-featured-toggle"
                   className="w-5 h-5 accent-[#FF6A00]"
                 />
                 <span className="text-white text-sm">Featured Product</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_new}
+                  onChange={(e) => setFormData({ ...formData, is_new: e.target.checked })}
+                  data-testid="product-is-new-toggle"
+                  className="w-5 h-5 accent-[#FF6A00]"
+                />
+                <span className="text-white text-sm">New Product</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input

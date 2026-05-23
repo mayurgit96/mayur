@@ -177,11 +177,17 @@ html {
 /* Typography classes */
 .heading-xl {
   font-family: 'Montserrat', sans-serif;
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .heading-xl {
+    font-size: 48px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -192,10 +198,16 @@ html {
 
 .heading-lg {
   font-family: 'Montserrat', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.01em;
+}
+
+@media (min-width: 640px) {
+  .heading-lg {
+    font-size: 32px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -236,4 +248,53 @@ html {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 639px) {
+  .mobile-text-center {
+    text-align: center;
+  }
+  
+  .mobile-px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .mobile-py-16 {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+  
+  .mobile-gap-4 {
+    gap: 1rem;
+  }
+  
+  .mobile-grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tap target sizing for mobile */
+@media (max-width: 768px) {
+  button, 
+  a[role="button"],
+  .btn-primary,
+  .btn-secondary {
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

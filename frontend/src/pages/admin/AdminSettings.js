@@ -1,25 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { Save, Video, Loader } from "lucide-react";
+import { Save, Loader, Upload, X, Image as ImageIcon } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const SLIDER_SLOT_COUNT = 5;
 
 export default function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [savingSlider, setSavingSlider] = useState(false);
+  const [uploadingIdx, setUploadingIdx] = useState(null);
   const [settings, setSettings] = useState({
     whatsapp_number: "",
     company_email: "",
     company_phone: "",
     company_address: "",
     google_maps_embed: "",
-    hero_video_url: ""
+    slider_images: [],
+    slider_interval: 3
   });
-  const [videoPrompt, setVideoPrompt] = useState(
-    "Create a cinematic 5-second loop video of an industrial worker using an angle grinder cutting metal, bright sparks flying in slow motion, dark industrial workshop environment, dramatic lighting, ultra realistic, high contrast, glowing orange sparks, metal cutting close-up shots"
-  );
+  const fileInputRefs = useRef([]);
 
   useEffect(() => {
     fetchSettings();
@@ -28,7 +29,17 @@ export default function AdminSettings() {
   const fetchSettings = async () => {
     try {
       const { data } = await axios.get(`${API}/settings`);
-      setSettings(data);
+      // Pad slider images to fixed slot count
+      const images = Array.from({ length: SLIDER_SLOT_COUNT }, (_, i) => (data.slider_images || [])[i] || "");
+      setSettings({
+        whatsapp_number: data.whatsapp_number || "",
+        company_email: data.company_email || "",
+        company_phone: data.company_phone || "",
+        company_address: data.company_address || "",
+        google_maps_embed: data.google_maps_embed || "",
+        slider_images: images,
+        slider_interval: data.slider_interval || 3
+      });
     } catch (error) {
       console.error("Failed to fetch settings:", error);
     } finally {
@@ -40,8 +51,15 @@ export default function AdminSettings() {
     e.preventDefault();
     setSaving(true);
     try {
-      await axios.put(`${API}/settings`, settings, { withCredentials: true });
-      toast.success("Settings saved successfully!");
+      const payload = {
+        whatsapp_number: settings.whatsapp_number,
+        company_email: settings.company_email,
+        company_phone: settings.company_phone,
+        company_address: settings.company_address,
+        google_maps_embed: settings.google_maps_embed
+      };
+      await axios.put(`${API}/settings`, payload, { withCredentials: true });
+      toast.success("Company settings saved!");
     } catch (error) {
       toast.error("Failed to save settings");
     } finally {
@@ -49,18 +67,59 @@ export default function AdminSettings() {
     }
   };
 
-  const generateVideo = async () => {
-    if (!window.confirm("This will generate a new hero video using AI. This may take a few minutes. Continue?")) return;
-    
-    setGeneratingVideo(true);
+  const handleSliderImageChange = (idx, value) => {
+    const newImages = [...settings.slider_images];
+    newImages[idx] = value;
+    setSettings({ ...settings, slider_images: newImages });
+  };
+
+  const handleFileUpload = async (idx, file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+    setUploadingIdx(idx);
     try {
-      const { data } = await axios.post(`${API}/generate-video`, { prompt: videoPrompt }, { withCredentials: true });
-      setSettings({ ...settings, hero_video_url: data.video_url });
-      toast.success("Video generated successfully!");
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await axios.post(`${API}/upload-image`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      handleSliderImageChange(idx, data.url);
+      toast.success(`Image ${idx + 1} uploaded`);
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to generate video");
+      toast.error(error.response?.data?.detail || "Upload failed");
     } finally {
-      setGeneratingVideo(false);
+      setUploadingIdx(null);
+    }
+  };
+
+  const clearSliderImage = (idx) => {
+    handleSliderImageChange(idx, "");
+  };
+
+  const saveSliderSettings = async () => {
+    setSavingSlider(true);
+    try {
+      // Only send non-empty images, preserving order
+      const cleanedImages = settings.slider_images.filter((img) => img && img.trim());
+      const intervalNum = Math.max(2, Math.min(15, parseInt(settings.slider_interval) || 3));
+      await axios.put(
+        `${API}/settings`,
+        { slider_images: cleanedImages, slider_interval: intervalNum },
+        { withCredentials: true }
+      );
+      toast.success("Slider settings saved!");
+    } catch (error) {
+      toast.error("Failed to save slider settings");
+    } finally {
+      setSavingSlider(false);
     }
   };
 
@@ -156,101 +215,117 @@ export default function AdminSettings() {
           </form>
         </div>
 
-        {/* Video Settings */}
-        <div className="bg-[#1A1A1A] border border-white/5 p-6">
-          <h2 className="font-['Barlow_Condensed'] font-bold text-xl uppercase text-white mb-6">
-            Hero Video
+        {/* Hero Slider Settings */}
+        <div data-testid="hero-slider-settings" className="bg-[#1A1A1A] border border-white/5 p-6">
+          <h2 className="font-['Barlow_Condensed'] font-bold text-xl uppercase text-white mb-2">
+            Hero Image Slider
           </h2>
+          <p className="text-[#6B7280] text-sm mb-6">
+            Manage up to {SLIDER_SLOT_COUNT} images shown on the homepage hero slider. Add a URL or upload a file (max 5MB).
+          </p>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
+            {/* Slide Interval */}
             <div>
-              <label className="text-[#6B7280] text-sm mb-2 block">Hero Video URL</label>
+              <label className="text-[#6B7280] text-sm mb-2 block">Slide Interval (seconds)</label>
               <input
-                type="url"
-                value={settings.hero_video_url}
-                onChange={(e) => setSettings({ ...settings, hero_video_url: e.target.value })}
-                data-testid="hero-video-url-input"
+                type="number"
+                min={2}
+                max={15}
+                value={settings.slider_interval}
+                onChange={(e) => setSettings({ ...settings, slider_interval: e.target.value })}
+                data-testid="slider-interval-input"
                 className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-3 focus:border-[#FF6A00] focus:outline-none"
-                placeholder="Paste your video URL here (YouTube, Vimeo, or direct MP4 link)"
               />
-              <p className="text-[#6B7280] text-xs mt-2">
-                Upload your video to a hosting service and paste the direct URL here. 
-                Supported formats: MP4, WebM. For best results use a 4-6 second looping video.
-              </p>
+              <p className="text-[#6B7280] text-xs mt-1">Time between auto-transitions (2-15 seconds)</p>
+            </div>
+
+            {/* Slider Image Slots */}
+            <div className="space-y-4 max-h-[520px] overflow-y-auto pr-2">
+              {settings.slider_images.map((imgUrl, idx) => (
+                <div
+                  key={idx}
+                  data-testid={`slider-slot-${idx}`}
+                  className="bg-[#0F0F0F] border border-white/10 p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <label className="text-white text-sm font-semibold">Image {idx + 1}</label>
+                    {imgUrl && (
+                      <button
+                        type="button"
+                        onClick={() => clearSliderImage(idx)}
+                        data-testid={`slider-slot-${idx}-clear`}
+                        className="text-[#6B7280] hover:text-red-500 transition-colors"
+                        aria-label={`Clear image ${idx + 1}`}
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Preview */}
+                  <div className="w-full h-32 bg-[#1A1A1A] border border-white/5 flex items-center justify-center overflow-hidden">
+                    {imgUrl ? (
+                      <img src={imgUrl} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon size={32} className="text-[#3A3A3A]" />
+                    )}
+                  </div>
+
+                  {/* URL input */}
+                  <input
+                    type="text"
+                    value={imgUrl}
+                    onChange={(e) => handleSliderImageChange(idx, e.target.value)}
+                    data-testid={`slider-slot-${idx}-url`}
+                    placeholder="Paste image URL or upload below"
+                    className="w-full bg-[#1A1A1A] border border-white/10 text-white px-3 py-2 text-sm focus:border-[#FF6A00] focus:outline-none"
+                  />
+
+                  {/* File upload */}
+                  <div className="flex gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={(el) => (fileInputRefs.current[idx] = el)}
+                      onChange={(e) => handleFileUpload(idx, e.target.files?.[0])}
+                      className="hidden"
+                      data-testid={`slider-slot-${idx}-file`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRefs.current[idx]?.click()}
+                      disabled={uploadingIdx === idx}
+                      data-testid={`slider-slot-${idx}-upload-btn`}
+                      className="flex-1 border border-white/10 text-white text-xs uppercase tracking-wider py-2 px-3 flex items-center justify-center gap-2 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors disabled:opacity-50"
+                    >
+                      {uploadingIdx === idx ? (
+                        <>
+                          <Loader className="animate-spin" size={14} />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          Upload from device
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <button
               type="button"
-              onClick={async () => {
-                setSaving(true);
-                try {
-                  await axios.put(`${API}/settings`, { hero_video_url: settings.hero_video_url }, { withCredentials: true });
-                  toast.success("Video URL saved successfully!");
-                } catch (error) {
-                  toast.error("Failed to save video URL");
-                } finally {
-                  setSaving(false);
-                }
-              }}
-              disabled={saving}
-              className="w-full bg-[#FF6A00] text-white font-bold text-sm uppercase tracking-wider px-6 py-3 flex items-center justify-center gap-2 hover:bg-white hover:text-[#1A1A1A] transition-colors disabled:opacity-50"
+              onClick={saveSliderSettings}
+              disabled={savingSlider}
+              data-testid="save-slider-btn"
+              className="w-full bg-[#FF6A00] text-white font-bold text-sm uppercase tracking-wider px-6 py-4 flex items-center justify-center gap-2 hover:bg-white hover:text-[#1A1A1A] transition-colors disabled:opacity-50"
             >
-              {saving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
-              Save Video URL
+              {savingSlider ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
+              {savingSlider ? "Saving..." : "Save Slider Settings"}
             </button>
-
-            {settings.hero_video_url && (
-              <div>
-                <label className="text-[#6B7280] text-sm mb-2 block">Preview</label>
-                <video
-                  src={settings.hero_video_url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-48 object-cover bg-[#0F0F0F]"
-                />
-              </div>
-            )}
-
-            <div className="border-t border-white/5 pt-6">
-              <h3 className="font-['Barlow_Condensed'] font-bold text-lg uppercase text-white mb-4">
-                AI Video Generation (Optional)
-              </h3>
-              <p className="text-[#6B7280] text-sm mb-4">
-                Alternatively, use AI (Sora 2) to generate a new hero video. 
-                This process may take 2-5 minutes.
-              </p>
-
-              <div className="mb-4">
-                <label className="text-[#6B7280] text-sm mb-2 block">Video Prompt</label>
-                <textarea
-                  value={videoPrompt}
-                  onChange={(e) => setVideoPrompt(e.target.value)}
-                  rows={4}
-                  className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-3 focus:border-[#FF6A00] focus:outline-none resize-none text-sm"
-                />
-              </div>
-
-              <button
-                onClick={generateVideo}
-                disabled={generatingVideo}
-                data-testid="generate-video-btn"
-                className="w-full border border-[#FF6A00] text-[#FF6A00] font-bold text-sm uppercase tracking-wider px-6 py-4 flex items-center justify-center gap-2 hover:bg-[#FF6A00] hover:text-white transition-colors disabled:opacity-50"
-              >
-                {generatingVideo ? (
-                  <>
-                    <Loader className="animate-spin" size={18} />
-                    Generating Video (this may take a few minutes)...
-                  </>
-                ) : (
-                  <>
-                    <Video size={18} />
-                    Generate Video with Sora 2
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </div>

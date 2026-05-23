@@ -75,6 +75,7 @@ class ProductCreate(BaseModel):
     image_url: Optional[str] = None
     specifications: dict = {}
     is_featured: bool = False
+    is_new: bool = False
     is_active: bool = True
 
 class ProductUpdate(BaseModel):
@@ -89,6 +90,7 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str] = None
     specifications: Optional[dict] = None
     is_featured: Optional[bool] = None
+    is_new: Optional[bool] = None
     is_active: Optional[bool] = None
 
 class ProductResponse(BaseModel):
@@ -104,6 +106,7 @@ class ProductResponse(BaseModel):
     image_url: Optional[str] = None
     specifications: dict = {}
     is_featured: bool = False
+    is_new: bool = False
     is_active: bool = True
     created_at: str
 
@@ -178,6 +181,8 @@ class SettingsUpdate(BaseModel):
     company_address: Optional[str] = None
     google_maps_embed: Optional[str] = None
     hero_video_url: Optional[str] = None
+    slider_images: Optional[List[str]] = None
+    slider_interval: Optional[int] = None
 
 class SettingsResponse(BaseModel):
     whatsapp_number: str
@@ -186,6 +191,8 @@ class SettingsResponse(BaseModel):
     company_address: str
     google_maps_embed: str
     hero_video_url: str
+    slider_images: List[str] = []
+    slider_interval: int = 3
 
 # Video Generation Models
 class VideoGenerateRequest(BaseModel):
@@ -296,6 +303,7 @@ async def get_products(
     size: Optional[str] = None,
     grit: Optional[str] = None,
     is_featured: Optional[bool] = None,
+    is_new: Optional[bool] = None,
     is_active: Optional[bool] = True,
     search: Optional[str] = None
 ):
@@ -310,6 +318,8 @@ async def get_products(
         query["grit"] = grit
     if is_featured is not None:
         query["is_featured"] = is_featured
+    if is_new is not None:
+        query["is_new"] = is_new
     if is_active is not None:
         query["is_active"] = is_active
     if search:
@@ -336,6 +346,7 @@ async def get_products(
             "image_url": doc.get("image_url"),
             "specifications": doc.get("specifications", {}),
             "is_featured": doc.get("is_featured", False),
+            "is_new": doc.get("is_new", False),
             "is_active": doc.get("is_active", True),
             "created_at": doc.get("created_at", datetime.now(timezone.utc).isoformat())
         })
@@ -362,6 +373,7 @@ async def get_product(product_id: str):
         "image_url": doc.get("image_url"),
         "specifications": doc.get("specifications", {}),
         "is_featured": doc.get("is_featured", False),
+        "is_new": doc.get("is_new", False),
         "is_active": doc.get("is_active", True),
         "created_at": doc.get("created_at", datetime.now(timezone.utc).isoformat())
     }
@@ -387,6 +399,7 @@ async def create_product(data: ProductCreate, request: Request):
         "image_url": doc.get("image_url"),
         "specifications": doc.get("specifications", {}),
         "is_featured": doc.get("is_featured", False),
+        "is_new": doc.get("is_new", False),
         "is_active": doc.get("is_active", True),
         "created_at": doc.get("created_at", "")
     }
@@ -565,8 +578,16 @@ async def get_settings():
             "company_phone": "+91-141-2345678",
             "company_address": "Industrial Area, Jaipur, Rajasthan, India - 302001",
             "google_maps_embed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.758977432432!2d75.78745297640383!3d26.91243777665686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db50c6c2e5a7d%3A0x8b7c0c6c6c6c6c6c!2sJaipur%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin",
-            "hero_video_url": ""
+            "hero_video_url": "",
+            "slider_images": [],
+            "slider_interval": 3
         }
+    # Ensure defaults exist for backward compatibility
+    settings.setdefault("slider_images", [])
+    settings.setdefault("slider_interval", 3)
+    settings.setdefault("hero_video_url", "")
+    # Filter out empty strings from slider images
+    settings["slider_images"] = [img for img in (settings.get("slider_images") or []) if img]
     return settings
 
 @api_router.put("/settings")
@@ -581,6 +602,26 @@ async def update_settings(data: SettingsUpdate, request: Request):
         upsert=True
     )
     return {"message": "Settings updated successfully"}
+
+@api_router.post("/upload-image")
+async def upload_image(request: Request, file: UploadFile = File(...)):
+    """Upload an image file and return a base64 data URL for use in slider_images / image_url fields."""
+    await require_admin(request)
+    
+    # Validate content type
+    content_type = file.content_type or ""
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+    
+    # Read and size-check (max 5MB)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be smaller than 5MB")
+    
+    import base64
+    encoded = base64.b64encode(content).decode("utf-8")
+    data_url = f"data:{content_type};base64,{encoded}"
+    return {"url": data_url, "size": len(content), "content_type": content_type}
 
 # ==================== CATALOG ROUTES ====================
 
@@ -739,9 +780,33 @@ async def startup_event():
             "company_phone": "+91-141-2345678",
             "company_address": "Industrial Area, Jaipur, Rajasthan, India - 302001",
             "google_maps_embed": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.758977432432!2d75.78745297640383!3d26.91243777665686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db50c6c2e5a7d%3A0x8b7c0c6c6c2e5a7d!2sJaipur%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin",
-            "hero_video_url": ""
+            "hero_video_url": "",
+            "slider_images": [
+                "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg",
+                "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
+                "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
+                "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
+                "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg"
+            ],
+            "slider_interval": 3
         })
         logger.info("Default settings created")
+    else:
+        # Backfill missing fields on existing settings
+        backfill = {}
+        if "slider_images" not in settings:
+            backfill["slider_images"] = [
+                "https://images.pexels.com/photos/13296066/pexels-photo-13296066.jpeg",
+                "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
+                "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
+                "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
+                "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg"
+            ]
+        if "slider_interval" not in settings:
+            backfill["slider_interval"] = 3
+        if backfill:
+            await db.settings.update_one({"type": "global"}, {"$set": backfill})
+            logger.info(f"Backfilled settings fields: {list(backfill.keys())}")
     
     # Seed sample products
     products_count = await db.products.count_documents({})
