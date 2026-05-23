@@ -194,6 +194,27 @@ class SettingsResponse(BaseModel):
     slider_images: List[str] = []
     slider_interval: int = 3
 
+# Category Models
+class SubcategoryCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None
+
+class CategoryCreate(BaseModel):
+    name: str
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    subcategories: List[SubcategoryCreate] = []
+    sort_order: int = 0
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    subcategories: Optional[List[SubcategoryCreate]] = None
+    sort_order: Optional[int] = None
+
 # Video Generation Models
 class VideoGenerateRequest(BaseModel):
     prompt: str
@@ -430,17 +451,142 @@ async def delete_product(product_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully"}
 
+def _slugify(text: str) -> str:
+    import re
+    s = (text or "").strip().lower()
+    s = re.sub(r"[^a-z0-9\s-]", "", s)
+    s = re.sub(r"[\s_]+", "-", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    return s or "category"
+
+def _category_to_dict(doc) -> dict:
+    return {
+        "id": str(doc["_id"]),
+        "name": doc.get("name", ""),
+        "slug": doc.get("slug", ""),
+        "description": doc.get("description", ""),
+        "image_url": doc.get("image_url", ""),
+        "subcategories": [
+            {"name": s.get("name", ""), "slug": s.get("slug", "")}
+            for s in doc.get("subcategories", [])
+        ],
+        "sort_order": doc.get("sort_order", 0),
+        "created_at": doc.get("created_at", "")
+    }
+
 @api_router.get("/categories")
 async def get_categories():
-    categories = [
-        {"id": "cutting-wheels", "name": "Cutting Wheels", "sizes": ["4\"", "5\"", "7\"", "10\"", "12\"", "14\""]},
-        {"id": "grinding-wheels", "name": "Grinding Wheels", "sizes": ["4\"", "5\"", "6\"", "7\""]},
-        {"id": "flap-discs", "name": "Flap Discs", "types": ["Metal Flap", "Fiber Flap", "Vertical", "Flexible"]},
-        {"id": "saw-blades", "name": "Saw Blades", "types": ["TCT", "Diamond", "Marble & Granite"]},
-        {"id": "non-woven-wheels", "name": "Non-Woven Wheels", "types": ["Standard", "Fine", "Ultra Fine"]},
-        {"id": "buffing-polishing", "name": "Buffing & Polishing", "types": ["Felt Buff", "Polishing Compound", "Abrasive Paper"]}
+    cursor = db.categories.find({}).sort([("sort_order", 1), ("name", 1)])
+    return [_category_to_dict(doc) async for doc in cursor]
+
+@api_router.post("/categories")
+async def create_category(data: CategoryCreate, request: Request):
+    await require_admin(request)
+    slug = (data.slug or _slugify(data.name)).strip().lower()
+    # Ensure slug uniqueness
+    existing = await db.categories.find_one({"slug": slug})
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Category with slug '{slug}' already exists")
+    
+    subcategories = [
+        {"name": s.name, "slug": (s.slug or _slugify(s.name))}
+        for s in (data.subcategories or [])
     ]
-    return categories
+    doc = {
+        "name": data.name,
+        "slug": slug,
+        "description": data.description or "",
+        "image_url": data.image_url or "",
+        "subcategories": subcategories,
+        "sort_order": data.sort_order or 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    result = await db.categories.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return _category_to_dict(doc)
+
+@api_router.put("/categories/{category_id}")
+async def update_category(category_id: str, data: CategoryUpdate, request: Request):
+    await require_admin(request)
+    update_data = {}
+    payload = data.model_dump()
+    
+    if payload.get("name") is not None:
+        update_data["name"] = payload["name"]
+    if payload.get("slug") is not None:
+        update_data["slug"] = payload["slug"].strip().lower()
+    if payload.get("description") is not None:
+        update_data["description"] = payload["description"]
+    if payload.get("image_url") is not None:
+        update_data["image_url"] = payload["image_url"]
+    if payload.get("sort_order") is not None:
+        update_data["sort_order"] = payload["sort_order"]
+    if payload.get("subcategories") is not None:
+        update_data["subcategories"] = [
+            {"name": s["name"], "slug": (s.get("slug") or _slugify(s["name"]))}
+            for s in payload["subcategories"]
+        ]
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    # Check slug uniqueness if changing
+    if "slug" in update_data:
+        existing = await db.categories.find_one({"slug": update_data["slug"], "_id": {"$ne": ObjectId(category_id)}})
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Slug '{update_data['slug']}' already in use")
+    
+    try:
+        result = await db.categories.update_one({"_id": ObjectId(category_id)}, {"$set": update_data})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    doc = await db.categories.find_one({"_id": ObjectId(category_id)})
+    return _category_to_dict(doc)
+
+@api_router.delete("/categories/{category_id}")
+async def delete_category(category_id: str, request: Request):
+    await require_admin(request)
+    try:
+        result = await db.categories.delete_one({"_id": ObjectId(category_id)})
+    except Exception:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"message": "Category deleted successfully"}
+
+@api_router.post("/categories/{category_id}/subcategories")
+async def add_subcategory(category_id: str, data: SubcategoryCreate, request: Request):
+    await require_admin(request)
+    sub_slug = (data.slug or _slugify(data.name)).strip().lower()
+    try:
+        result = await db.categories.update_one(
+            {"_id": ObjectId(category_id)},
+            {"$push": {"subcategories": {"name": data.name, "slug": sub_slug}}}
+        )
+    except Exception:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    doc = await db.categories.find_one({"_id": ObjectId(category_id)})
+    return _category_to_dict(doc)
+
+@api_router.delete("/categories/{category_id}/subcategories/{sub_slug}")
+async def remove_subcategory(category_id: str, sub_slug: str, request: Request):
+    await require_admin(request)
+    try:
+        result = await db.categories.update_one(
+            {"_id": ObjectId(category_id)},
+            {"$pull": {"subcategories": {"slug": sub_slug}}}
+        )
+    except Exception:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    doc = await db.categories.find_one({"_id": ObjectId(category_id)})
+    return _category_to_dict(doc)
 
 # ==================== DEALER ROUTES ====================
 
@@ -747,6 +893,7 @@ async def startup_event():
     await db.products.create_index("is_featured")
     await db.dealer_applications.create_index("status")
     await db.inquiries.create_index("status")
+    await db.categories.create_index("slug", unique=True)
     
     # Seed admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@mayur.com").lower()
@@ -807,6 +954,93 @@ async def startup_event():
         if backfill:
             await db.settings.update_one({"type": "global"}, {"$set": backfill})
             logger.info(f"Backfilled settings fields: {list(backfill.keys())}")
+    
+    # Seed default categories if none exist
+    categories_count = await db.categories.count_documents({})
+    if categories_count == 0:
+        default_categories = [
+            {
+                "name": "Cutting Wheels",
+                "slug": "cutting-wheels",
+                "description": "Precision metal cutting wheels",
+                "image_url": "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg",
+                "subcategories": [
+                    {"name": "4 inch", "slug": "4-inch"},
+                    {"name": "5 inch", "slug": "5-inch"},
+                    {"name": "7 inch", "slug": "7-inch"},
+                    {"name": "14 inch", "slug": "14-inch"}
+                ],
+                "sort_order": 1,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "name": "Grinding Wheels",
+                "slug": "grinding-wheels",
+                "description": "Heavy-duty grinding wheels",
+                "image_url": "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg",
+                "subcategories": [
+                    {"name": "4 inch", "slug": "4-inch"},
+                    {"name": "7 inch", "slug": "7-inch"}
+                ],
+                "sort_order": 2,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "name": "Flap Discs",
+                "slug": "flap-discs",
+                "description": "Blending and finishing flap discs",
+                "image_url": "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg",
+                "subcategories": [
+                    {"name": "Metal Flap", "slug": "metal-flap"},
+                    {"name": "Fiber Flap", "slug": "fiber-flap"},
+                    {"name": "Vertical", "slug": "vertical"},
+                    {"name": "Flexible", "slug": "flexible"}
+                ],
+                "sort_order": 3,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "name": "Saw Blades",
+                "slug": "saw-blades",
+                "description": "TCT, Diamond, and specialty saw blades",
+                "image_url": "https://images.pexels.com/photos/1205434/pexels-photo-1205434.jpeg",
+                "subcategories": [
+                    {"name": "TCT", "slug": "tct"},
+                    {"name": "Diamond", "slug": "diamond"},
+                    {"name": "Marble & Granite", "slug": "marble-granite"}
+                ],
+                "sort_order": 4,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "name": "Non-Woven Wheels",
+                "slug": "non-woven-wheels",
+                "description": "Surface conditioning and polishing wheels",
+                "image_url": "https://images.pexels.com/photos/1108101/pexels-photo-1108101.jpeg",
+                "subcategories": [
+                    {"name": "Standard", "slug": "standard"},
+                    {"name": "Fine", "slug": "fine"},
+                    {"name": "Ultra Fine", "slug": "ultra-fine"}
+                ],
+                "sort_order": 5,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "name": "Buffing & Polishing",
+                "slug": "buffing-polishing",
+                "description": "Buffing wheels and polishing compounds",
+                "image_url": "https://images.pexels.com/photos/209235/pexels-photo-209235.jpeg",
+                "subcategories": [
+                    {"name": "Felt Buff", "slug": "felt-buff"},
+                    {"name": "Polishing Compound", "slug": "polishing-compound"},
+                    {"name": "Abrasive Paper", "slug": "abrasive-paper"}
+                ],
+                "sort_order": 6,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        await db.categories.insert_many(default_categories)
+        logger.info(f"Seeded {len(default_categories)} default categories")
     
     # Seed sample products
     products_count = await db.products.count_documents({})

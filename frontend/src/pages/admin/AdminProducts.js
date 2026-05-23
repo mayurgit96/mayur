@@ -6,15 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const categoryOptions = [
-  { id: "cutting-wheels", name: "Cutting Wheels" },
-  { id: "grinding-wheels", name: "Grinding Wheels" },
-  { id: "flap-discs", name: "Flap Discs" },
-  { id: "saw-blades", name: "Saw Blades" },
-  { id: "non-woven-wheels", name: "Non-Woven Wheels" },
-  { id: "buffing-polishing", name: "Buffing & Polishing" }
-];
-
 const initialFormData = {
   name: "",
   category: "",
@@ -33,6 +24,7 @@ const initialFormData = {
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -44,8 +36,26 @@ export default function AdminProducts() {
   const [specValue, setSpecValue] = useState("");
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     fetchProducts();
   }, [search, filter]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await axios.get(`${API}/categories`);
+      setCategoryOptions(
+        data.map((c) => ({ id: c.slug, name: c.name, subcategories: c.subcategories || [] }))
+      );
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
+  const selectedCategory = categoryOptions.find((c) => c.id === formData.category);
+  const subcategoryOptions = selectedCategory?.subcategories || [];
 
   const fetchProducts = async () => {
     try {
@@ -286,8 +296,9 @@ export default function AdminProducts() {
                 <label className="text-[#6B7280] text-sm mb-2 block">Category *</label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value, subcategory: "" })}
                   required
+                  data-testid="product-category-select"
                   className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-2 focus:border-[#FF6A00] focus:outline-none"
                 >
                   <option value="">Select Category</option>
@@ -297,6 +308,23 @@ export default function AdminProducts() {
                 </select>
               </div>
             </div>
+
+            {subcategoryOptions.length > 0 && (
+              <div>
+                <label className="text-[#6B7280] text-sm mb-2 block">Subcategory</label>
+                <select
+                  value={formData.subcategory || ""}
+                  onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                  data-testid="product-subcategory-select"
+                  className="w-full bg-[#0F0F0F] border border-white/10 text-white px-4 py-2 focus:border-[#FF6A00] focus:outline-none"
+                >
+                  <option value="">(None)</option>
+                  {subcategoryOptions.map((s) => (
+                    <option key={s.slug} value={s.slug}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-4">
               <div>

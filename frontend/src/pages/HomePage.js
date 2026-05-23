@@ -8,10 +8,6 @@ import {
   Truck, 
   Award, 
   Users,
-  Factory,
-  Car,
-  Wrench,
-  HardHat,
   Quote,
   Sparkles
 } from "lucide-react";
@@ -20,7 +16,7 @@ import HeroSlider from "@/components/HeroSlider";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const categories = [
+const defaultCategories = [
   { id: "cutting-wheels", name: "Cutting Wheels", desc: "Precision metal cutting", image: "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg" },
   { id: "grinding-wheels", name: "Grinding Wheels", desc: "Heavy-duty grinding", image: "https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg" },
   { id: "flap-discs", name: "Flap Discs", desc: "Blending & finishing", image: "https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg" },
@@ -36,13 +32,6 @@ const features = [
   { icon: Truck, title: "Fast Delivery", desc: "Quick supply chain" }
 ];
 
-const industries = [
-  { icon: HardHat, name: "Construction" },
-  { icon: Factory, name: "Fabrication" },
-  { icon: Car, name: "Automotive" },
-  { icon: Wrench, name: "Metal Works" }
-];
-
 const testimonials = [
   { name: "Rajesh Kumar", company: "Steel Fabricators Pvt Ltd", text: "Mayur abrasives have been our go-to choice for over 5 years. Exceptional quality and consistent performance." },
   { name: "Sunil Sharma", company: "Auto Parts Industries", text: "The durability of Mayur cutting wheels is unmatched. We've reduced our tool costs by 30%." },
@@ -52,11 +41,13 @@ const testimonials = [
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newProducts, setNewProducts] = useState([]);
+  const [categories, setCategories] = useState(defaultCategories);
   const { settings, getWhatsAppLink } = useSettings();
 
   useEffect(() => {
     fetchFeaturedProducts();
     fetchNewProducts();
+    fetchCategories();
   }, []);
 
   const fetchFeaturedProducts = async () => {
@@ -74,6 +65,24 @@ export default function HomePage() {
       setNewProducts(data.slice(0, 4));
     } catch (error) {
       console.error("Failed to fetch new products:", error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await axios.get(`${API}/categories`);
+      if (Array.isArray(data) && data.length > 0) {
+        setCategories(
+          data.map((c) => ({
+            id: c.slug,
+            name: c.name,
+            desc: c.description || (c.subcategories || []).map((s) => s.name).slice(0, 3).join(" · "),
+            image: c.image_url || "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg"
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
     }
   };
 
@@ -385,47 +394,6 @@ export default function HomePage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Industries Served - White */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
-                <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                  Industries
-                </p>
-              </div>
-              <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A] mb-6 sm:mb-8">
-                Industries We Serve
-              </h2>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {industries.map((industry, idx) => {
-                  const Icon = industry.icon;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 sm:gap-4 p-3 sm:p-5 bg-[#F8F9FA] border-l-4 border-[#FF6A00] hover:bg-[#FF6A00]/5 transition-colors"
-                    >
-                      <Icon size={20} className="sm:w-6 sm:h-6 text-[#FF6A00]" />
-                      <span className="font-['Montserrat'] font-semibold text-sm sm:text-base text-[#1A1A1A]">{industry.name}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="relative mt-8 md:mt-0">
-              <img
-                src="https://images.pexels.com/photos/50691/drill-milling-milling-machine-drilling-50691.jpeg"
-                alt="Industrial application"
-                className="w-full h-[250px] sm:h-[400px] object-cover"
-              />
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-24 sm:h-24 bg-[#FF6A00]"></div>
-            </div>
           </div>
         </div>
       </section>

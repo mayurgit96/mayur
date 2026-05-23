@@ -18,6 +18,7 @@ import ContactPage from "@/pages/ContactPage";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
+import AdminCategories from "@/pages/admin/AdminCategories";
 import AdminDealers from "@/pages/admin/AdminDealers";
 import AdminInquiries from "@/pages/admin/AdminInquiries";
 import AdminSettings from "@/pages/admin/AdminSettings";
@@ -50,6 +51,7 @@ function App() {
             <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/products" element={<AdminProducts />} />
+              <Route path="/admin/categories" element={<AdminCategories />} />
               <Route path="/admin/dealers" element={<AdminDealers />} />
               <Route path="/admin/inquiries" element={<AdminInquiries />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
