@@ -1,0 +1,26 @@
+# Deploy the FastAPI backend on Render (free tier works for testing).
+# MongoDB: use MongoDB Atlas (free M0 cluster) — see DEPLOYMENT.md
+
+services:
+  - type: web
+    name: mayur-abrasives-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        value: mayur_abrasives
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@mayur.com
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
