@@ -4,11 +4,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Loader, Eye, EyeOff, Upload, X, Image as ImageIcon, Plus, Trash2 } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
+import { usePages } from "@/context/PagesContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function AdminPageEditor() {
   const { pageKey } = useParams();
+  const { refetch: refetchPages } = usePages();
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +48,7 @@ export default function AdminPageEditor() {
         { withCredentials: true }
       );
       toast.success("Page saved!");
+      refetchPages();
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to save page");
     } finally {

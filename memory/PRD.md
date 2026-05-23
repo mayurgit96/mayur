@@ -52,6 +52,40 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.5 - Feb, 2026 - CMS / Page Management)
+
+### CMS Backend
+- [x] New `pages` collection with 7 seeded pages (home, about, contact, privacy, terms, dealer, footer)
+- [x] Page document schema: title, enabled, sections[], content_html, seo, meta
+- [x] Section schema: key, enabled, heading, subheading, description (HTML), button_text, button_link, image_url, desktop_banner, mobile_banner, meta
+- [x] SEO per page: meta_title, meta_description, keywords, og_image
+- [x] Endpoints: `GET /api/pages`, `GET /api/pages/{key}`, `PUT /api/pages/{key}` (admin, whitelist-protected, upserts)
+
+### CMS Admin UI
+- [x] New sidebar entry "Pages (CMS)" → `/admin/pages` lists all 7 pages
+- [x] `/admin/pages/{key}` opens generic page editor with:
+  - Page title + enabled toggle
+  - Section editors with rich text editor (react-quill-new), images (URL or 5MB upload), button text + link, per-section visibility toggle
+  - About/home section has stat1/stat2 value+label custom meta fields
+  - SEO card (meta_title, meta_description, keywords, og_image)
+  - Long-form content editor for Privacy / Terms / About
+  - Footer editor with company description, copyright, dynamic quick_links repeater, 6 social media URL fields
+- [x] Save → public site refetches CMS context automatically (no manual refresh needed)
+
+### Public Site (Phase 1 wired)
+- [x] HomePage reads CMS — section headings/subheadings/buttons + visibility toggles per section (hero, about, new_products, featured_products, categories, testimonials, cta)
+- [x] HomePage about section uses CMS description (rich HTML) + stat1/stat2 values+labels
+- [x] Footer reads CMS — company description, quick links list, social media URLs (all 6 networks), copyright text
+- [x] `/privacy` and `/terms` routes render CMS content via new `StaticContentPage`
+- [x] Document title set from page.seo.meta_title
+
+### Two Small Fixes
+- [x] Removed "Admin Login" link from footer bottom bar
+- [x] Removed "Applications" link from navbar
+
+### Deferred to Phase 2
+- [ ] Wire About / Contact / Dealer public pages to CMS (currently CMS rows exist but pages use hardcoded layouts)
+
 ## What's Been Implemented (v1.4 - Feb, 2026 - Logo + Clean Hero)
 
 ### Brand Logo

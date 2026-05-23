@@ -657,9 +657,16 @@ async def get_page(page_key: str):
         raise HTTPException(status_code=404, detail=f"Page '{page_key}' not found")
     return _page_to_dict(doc)
 
+ALLOWED_PAGE_KEYS = {"home", "about", "contact", "privacy", "terms", "dealer", "footer"}
+
 @api_router.put("/pages/{page_key}")
 async def update_page(page_key: str, data: PageUpdate, request: Request):
     await require_admin(request)
+    if page_key not in ALLOWED_PAGE_KEYS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid page key '{page_key}'. Allowed: {sorted(ALLOWED_PAGE_KEYS)}"
+        )
     update_data = {}
     payload = data.model_dump(exclude_none=True)
     for key in ("title", "enabled", "content_html", "meta"):
