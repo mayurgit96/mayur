@@ -1293,7 +1293,6 @@ async def startup_event():
     if products_count == 0:
         sample_products = [
             {
-                "name": "Mayur Pro Cutting Wheel 4\"",
                 "name": "Mayur Pro Cut Off Wheel 4\"",
                 "category": "abrasives",
                 "subcategory": "cut-off-wheels",

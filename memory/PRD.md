@@ -52,6 +52,24 @@ Design and develop a premium, modern, conversion-focused industrial website for 
 - [x] WhatsApp redirect for all forms
 - [x] Google Maps embed
 
+## What's Been Implemented (v1.6 - Feb, 2026 - Multi-Image Gallery + Device Upload)
+
+### Multi-Image Product Gallery
+- [x] Product schema now has `images: List[str]` (gallery) alongside legacy `image_url` (primary)
+- [x] Backend auto-syncs: `image_url` always equals `images[0]`, dedupes, leads gallery
+- [x] Backward compat: legacy products with only `image_url` automatically expose `images=[image_url]`
+- [x] Admin Products form: replaced single URL input with `MultiImageUploader` — supports paste URL, multi-file device upload (JPG/PNG/WEBP, 5MB each), reorder via up/down arrows, set-primary star, remove
+- [x] Public Product Detail page: new `ProductGallery` shows main image + clickable thumbnail strip (when more than 1 image)
+
+### Reusable ImageUploader Component
+- [x] New `<ImageUploader>` for single-image fields — URL input + device upload + preview + clear
+- [x] Wired into Admin Categories (was URL-only — now has device upload)
+- [x] Available for future fields (settings/CMS already had ad-hoc upload UIs)
+
+### Backend Hygiene
+- [x] Cleaned up duplicate dict key in product seed
+- [x] New helper `_gallery_from_doc()` handles backward compat in one place
+
 ## What's Been Implemented (v1.5 - Feb, 2026 - CMS / Page Management)
 
 ### CMS Backend
