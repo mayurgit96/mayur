@@ -12,9 +12,21 @@ import {
   Sparkles
 } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { usePages } from "@/context/PagesContext";
 import HeroSlider from "@/components/HeroSlider";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const sectionEnabled = (page, sectionKey, fallback = true) => {
+  if (!page?.sections) return fallback;
+  const s = page.sections.find((sec) => sec.key === sectionKey);
+  return s ? s.enabled !== false : fallback;
+};
+
+const sectionFor = (page, sectionKey) => {
+  if (!page?.sections) return null;
+  return page.sections.find((s) => s.key === sectionKey) || null;
+};
 
 const defaultCategories = [
   { id: "cutting-wheels", name: "Cutting Wheels", desc: "Precision metal cutting", image: "https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg" },
@@ -43,6 +55,30 @@ export default function HomePage() {
   const [newProducts, setNewProducts] = useState([]);
   const [categories, setCategories] = useState(defaultCategories);
   const { settings, getWhatsAppLink } = useSettings();
+  const { getPage } = usePages();
+  const homePage = getPage("home");
+
+  const heroEnabled = sectionEnabled(homePage, "hero");
+  const aboutEnabled = sectionEnabled(homePage, "about");
+  const newProductsEnabled = sectionEnabled(homePage, "new_products");
+  const featuredEnabled = sectionEnabled(homePage, "featured_products");
+  const categoriesEnabled = sectionEnabled(homePage, "categories");
+  const testimonialsEnabled = sectionEnabled(homePage, "testimonials");
+  const ctaEnabled = sectionEnabled(homePage, "cta");
+
+  const aboutSec = sectionFor(homePage, "about");
+  const newProductsSec = sectionFor(homePage, "new_products");
+  const featuredSec = sectionFor(homePage, "featured_products");
+  const categoriesSec = sectionFor(homePage, "categories");
+  const testimonialsSec = sectionFor(homePage, "testimonials");
+  const ctaSec = sectionFor(homePage, "cta");
+
+  useEffect(() => {
+    if (homePage?.seo?.meta_title) document.title = homePage.seo.meta_title;
+    return () => {
+      document.title = "Mayur Abrasives";
+    };
+  }, [homePage]);
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -89,55 +125,75 @@ export default function HomePage() {
   return (
     <div data-testid="home-page" className="bg-white">
       {/* Hero Section — pure image slider, no overlay text */}
-      <section data-testid="hero-section" className="relative h-[60vh] sm:h-[70vh] lg:h-screen min-h-[320px] sm:min-h-[500px] lg:min-h-[700px]">
-        <HeroSlider
-          slides={settings.slider_slides}
-          images={settings.slider_images}
-          interval={settings.slider_interval}
-          showOverlay={false}
-        />
-      </section>
+      {heroEnabled && (
+        <section data-testid="hero-section" className="relative h-[60vh] sm:h-[70vh] lg:h-screen min-h-[320px] sm:min-h-[500px] lg:min-h-[700px]">
+          <HeroSlider
+            slides={settings.slider_slides}
+            images={settings.slider_images}
+            interval={settings.slider_interval}
+            showOverlay={false}
+          />
+        </section>
+      )}
 
       {/* Brand Introduction - Light */}
-      <section className="py-16 sm:py-24 bg-white">
+      {aboutEnabled && (
+      <section data-testid="about-section" className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
                 <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                  About Mayur
+                  {aboutSec?.subheading || "About Mayur"}
                 </p>
               </div>
               <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A] mb-4 sm:mb-6 leading-tight">
-                Industrial Strength,<br />Trusted Quality
+                {aboutSec?.heading || "Industrial Strength, Trusted Quality"}
               </h2>
-              <p className="font-['Inter'] text-[#6B7280] leading-relaxed mb-6 sm:mb-8 text-base sm:text-lg">
-                Mayur Abrasives is a leading manufacturer and supplier of premium quality abrasive products. 
-                With our brands <strong className="text-[#1A1A1A]">Mayur Plus</strong> and <strong className="text-[#1A1A1A]">Mayur Pro</strong>, 
-                we cater to diverse industrial needs from metal fabrication to construction.
-              </p>
+              {aboutSec?.description ? (
+                <div
+                  className="cms-rendered font-['Inter'] text-[#6B7280] leading-relaxed mb-6 sm:mb-8 text-base sm:text-lg"
+                  dangerouslySetInnerHTML={{ __html: aboutSec.description }}
+                />
+              ) : (
+                <p className="font-['Inter'] text-[#6B7280] leading-relaxed mb-6 sm:mb-8 text-base sm:text-lg">
+                  Mayur Abrasives is a leading manufacturer and supplier of premium quality abrasive products. 
+                  With our brands <strong className="text-[#1A1A1A]">Mayur Plus</strong> and <strong className="text-[#1A1A1A]">Mayur Pro</strong>, 
+                  we cater to diverse industrial needs from metal fabrication to construction.
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
                 <div className="border-l-4 border-[#FF6A00] pl-3 sm:pl-4">
-                  <p className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl text-[#FF6A00]">200+</p>
-                  <p className="text-[#6B7280] text-xs sm:text-sm uppercase tracking-wider font-['Inter'] mt-1">Dealers Nationwide</p>
+                  <p className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl text-[#FF6A00]">
+                    {aboutSec?.meta?.stat1_value || "200+"}
+                  </p>
+                  <p className="text-[#6B7280] text-xs sm:text-sm uppercase tracking-wider font-['Inter'] mt-1">
+                    {aboutSec?.meta?.stat1_label || "Dealers Nationwide"}
+                  </p>
                 </div>
                 <div className="border-l-4 border-[#0F3D2E] pl-3 sm:pl-4">
-                  <p className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl text-[#0F3D2E]">15+</p>
-                  <p className="text-[#6B7280] text-xs sm:text-sm uppercase tracking-wider font-['Inter'] mt-1">Years Experience</p>
+                  <p className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl text-[#0F3D2E]">
+                    {aboutSec?.meta?.stat2_value || "15+"}
+                  </p>
+                  <p className="text-[#6B7280] text-xs sm:text-sm uppercase tracking-wider font-['Inter'] mt-1">
+                    {aboutSec?.meta?.stat2_label || "Years Experience"}
+                  </p>
                 </div>
               </div>
-              <Link
-                to="/about"
-                data-testid="about-learn-more-btn"
-                className="inline-flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
-              >
-                Learn More <ChevronRight size={18} />
-              </Link>
+              {(aboutSec?.button_text || "Learn More") && (
+                <Link
+                  to={aboutSec?.button_link || "/about"}
+                  data-testid="about-learn-more-btn"
+                  className="inline-flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
+                >
+                  {aboutSec?.button_text || "Learn More"} <ChevronRight size={18} />
+                </Link>
+              )}
             </div>
             <div className="relative mt-8 md:mt-0">
               <img
-                src="https://images.pexels.com/photos/34718930/pexels-photo-34718930.jpeg"
+                src={aboutSec?.image_url || "https://images.pexels.com/photos/34718930/pexels-photo-34718930.jpeg"}
                 alt="Manufacturing facility"
                 className="w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover"
               />
@@ -149,9 +205,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* New Products - Gray Background */}
-      {newProducts.length > 0 && (
+      {newProductsEnabled && newProducts.length > 0 && (
         <section data-testid="new-products-section" className="py-16 sm:py-24 bg-[#F8F9FA]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-12 gap-4">
@@ -159,19 +216,19 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
                   <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                    Just Launched
+                    {newProductsSec?.subheading || "Just Launched"}
                   </p>
                 </div>
                 <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
-                  New Products
+                  {newProductsSec?.heading || "New Products"}
                 </h2>
               </div>
               <Link
-                to="/products"
+                to={newProductsSec?.button_link || "/products"}
                 data-testid="new-products-view-all"
                 className="flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
               >
-                View All <ArrowRight size={16} />
+                {newProductsSec?.button_text || "View All"} <ArrowRight size={16} />
               </Link>
             </div>
 
@@ -217,7 +274,7 @@ export default function HomePage() {
       )}
 
       {/* Featured Products - White */}
-      {featuredProducts.length > 0 && (
+      {featuredEnabled && featuredProducts.length > 0 && (
         <section data-testid="featured-products-section" className="py-16 sm:py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 sm:mb-12 gap-4">
@@ -225,19 +282,19 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
                   <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                    Featured
+                    {featuredSec?.subheading || "Featured"}
                   </p>
                 </div>
                 <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
-                  Featured Products
+                  {featuredSec?.heading || "Featured Products"}
                 </h2>
               </div>
               <Link
-                to="/products"
+                to={featuredSec?.button_link || "/products"}
                 data-testid="featured-products-view-all"
                 className="flex items-center gap-2 text-[#FF6A00] font-['Montserrat'] font-bold text-sm uppercase tracking-widest hover:text-[#0F3D2E] transition-colors"
               >
-                View All <ArrowRight size={16} />
+                {featuredSec?.button_text || "View All"} <ArrowRight size={16} />
               </Link>
             </div>
 
@@ -280,18 +337,19 @@ export default function HomePage() {
       )}
 
       {/* Product Categories - Gray Background */}
+      {categoriesEnabled && (
       <section data-testid="categories-section" className="py-16 sm:py-24 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-10 sm:mb-16">
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
               <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                Our Products
+                {categoriesSec?.subheading || "Our Products"}
               </p>
               <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
             </div>
             <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
-              Product Categories
+              {categoriesSec?.heading || "Product Categories"}
             </h2>
           </div>
 
@@ -325,6 +383,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Why Choose Us - Orange Section */}
       <section className="py-16 sm:py-24 bg-[#FF6A00]">
@@ -362,18 +421,19 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials - White */}
-      <section className="py-16 sm:py-24 bg-white">
+      {testimonialsEnabled && (
+      <section data-testid="testimonials-section" className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-10 sm:mb-16">
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
               <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                Testimonials
+                {testimonialsSec?.subheading || "Testimonials"}
               </p>
               <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
             </div>
             <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#1A1A1A]">
-              What Our Partners Say
+              {testimonialsSec?.heading || "What Our Partners Say"}
             </h2>
           </div>
 
@@ -400,24 +460,33 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA Banner - Green */}
+      {ctaEnabled && (
       <section data-testid="cta-banner" className="py-16 sm:py-24 bg-[#0F3D2E]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
           <h2 className="font-['Montserrat'] font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white mb-4 sm:mb-6">
-            Join Our Dealer Network
+            {ctaSec?.heading || "Join Our Dealer Network"}
           </h2>
-          <p className="font-['Inter'] text-white/70 text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-10">
-            Partner with Mayur Abrasives and grow your business with premium quality products, 
-            competitive pricing, and excellent support.
-          </p>
+          {ctaSec?.description ? (
+            <div
+              className="cms-rendered font-['Inter'] text-white/70 text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-10"
+              dangerouslySetInnerHTML={{ __html: ctaSec.description }}
+            />
+          ) : (
+            <p className="font-['Inter'] text-white/70 text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-10">
+              Partner with Mayur Abrasives and grow your business with premium quality products, 
+              competitive pricing, and excellent support.
+            </p>
+          )}
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
             <Link
-              to="/dealer"
+              to={ctaSec?.button_link || "/dealer"}
               data-testid="cta-become-dealer-btn"
               className="bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 sm:px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors"
             >
-              Become a Dealer
+              {ctaSec?.button_text || "Become a Dealer"}
             </Link>
             <a
               href={getWhatsAppLink("Hi, I'm interested in becoming a dealer.")}
@@ -431,6 +500,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 }

@@ -9,7 +9,8 @@ import {
   LogOut,
   Menu,
   X,
-  FolderTree
+  FolderTree,
+  FileText
 } from "lucide-react";
 import { useState } from "react";
 
@@ -17,6 +18,7 @@ const sidebarLinks = [
   { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { name: "Products", path: "/admin/products", icon: Package },
   { name: "Categories", path: "/admin/categories", icon: FolderTree },
+  { name: "Pages (CMS)", path: "/admin/pages", icon: FileText },
   { name: "Dealer Applications", path: "/admin/dealers", icon: Users },
   { name: "Inquiries", path: "/admin/inquiries", icon: MessageSquare },
   { name: "Settings", path: "/admin/settings", icon: Settings }

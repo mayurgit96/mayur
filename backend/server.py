@@ -205,6 +205,34 @@ class SubcategoryCreate(BaseModel):
     name: str
     slug: Optional[str] = None
 
+# Page CMS Models
+class PageSEO(BaseModel):
+    meta_title: Optional[str] = ""
+    meta_description: Optional[str] = ""
+    keywords: Optional[str] = ""
+    og_image: Optional[str] = ""
+
+class PageSection(BaseModel):
+    key: str
+    enabled: Optional[bool] = True
+    heading: Optional[str] = ""
+    subheading: Optional[str] = ""
+    description: Optional[str] = ""  # HTML from rich text editor
+    button_text: Optional[str] = ""
+    button_link: Optional[str] = ""
+    image_url: Optional[str] = ""
+    desktop_banner: Optional[str] = ""
+    mobile_banner: Optional[str] = ""
+    meta: Optional[dict] = {}
+
+class PageUpdate(BaseModel):
+    title: Optional[str] = None
+    enabled: Optional[bool] = None
+    sections: Optional[List[PageSection]] = None
+    content_html: Optional[str] = None  # Used by simple long-form pages (privacy, terms)
+    seo: Optional[PageSEO] = None
+    meta: Optional[dict] = None  # Page-specific extras (e.g., footer's social links)
+
 class CategoryCreate(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -600,6 +628,57 @@ async def remove_subcategory(category_id: str, sub_slug: str, request: Request):
     doc = await db.categories.find_one({"_id": ObjectId(category_id)})
     return _category_to_dict(doc)
 
+# ==================== PAGE CMS ROUTES ====================
+
+def _page_to_dict(doc) -> dict:
+    if not doc:
+        return None
+    return {
+        "id": str(doc["_id"]),
+        "key": doc.get("key", ""),
+        "title": doc.get("title", ""),
+        "enabled": doc.get("enabled", True),
+        "sections": doc.get("sections", []),
+        "content_html": doc.get("content_html", ""),
+        "seo": doc.get("seo", {"meta_title": "", "meta_description": "", "keywords": "", "og_image": ""}),
+        "meta": doc.get("meta", {}),
+        "updated_at": doc.get("updated_at", "")
+    }
+
+@api_router.get("/pages")
+async def list_pages():
+    cursor = db.pages.find({}).sort([("sort_order", 1), ("key", 1)])
+    return [_page_to_dict(doc) async for doc in cursor]
+
+@api_router.get("/pages/{page_key}")
+async def get_page(page_key: str):
+    doc = await db.pages.find_one({"key": page_key})
+    if not doc:
+        raise HTTPException(status_code=404, detail=f"Page '{page_key}' not found")
+    return _page_to_dict(doc)
+
+@api_router.put("/pages/{page_key}")
+async def update_page(page_key: str, data: PageUpdate, request: Request):
+    await require_admin(request)
+    update_data = {}
+    payload = data.model_dump(exclude_none=True)
+    for key in ("title", "enabled", "content_html", "meta"):
+        if key in payload:
+            update_data[key] = payload[key]
+    if "sections" in payload:
+        update_data["sections"] = payload["sections"]
+    if "seo" in payload:
+        update_data["seo"] = payload["seo"]
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.pages.update_one(
+        {"key": page_key},
+        {"$set": update_data, "$setOnInsert": {"key": page_key, "created_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    doc = await db.pages.find_one({"key": page_key})
+    return _page_to_dict(doc)
+
 # ==================== DEALER ROUTES ====================
 
 @api_router.post("/dealers/apply")
@@ -931,6 +1010,7 @@ async def startup_event():
     await db.dealer_applications.create_index("status")
     await db.inquiries.create_index("status")
     await db.categories.create_index("slug", unique=True)
+    await db.pages.create_index("key", unique=True)
     
     # Seed admin
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@mayur.com").lower()
@@ -1048,6 +1128,133 @@ async def startup_event():
         ]
         await db.categories.insert_many(default_categories)
         logger.info(f"Seeded {len(default_categories)} default categories")
+    
+    # Seed default CMS pages if none exist
+    pages_count = await db.pages.count_documents({})
+    if pages_count == 0:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        default_pages = [
+            {
+                "key": "home",
+                "title": "Home Page",
+                "enabled": True,
+                "sort_order": 1,
+                "sections": [
+                    {"key": "hero", "enabled": True, "heading": "", "subheading": "", "description": "", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}},
+                    {"key": "about", "enabled": True,
+                     "heading": "Industrial Strength, Trusted Quality",
+                     "subheading": "About Mayur",
+                     "description": "<p>Mayur Abrasives is a leading manufacturer and supplier of premium quality abrasive products. With our brands <strong>Mayur Plus</strong> and <strong>Mayur Pro</strong>, we cater to diverse industrial needs from metal fabrication to construction.</p>",
+                     "button_text": "Learn More", "button_link": "/about",
+                     "image_url": "", "desktop_banner": "", "mobile_banner": "",
+                     "meta": {"stat1_value": "200+", "stat1_label": "Dealers Nationwide", "stat2_value": "15+", "stat2_label": "Years Experience"}},
+                    {"key": "new_products", "enabled": True, "heading": "New Products", "subheading": "Just Launched", "description": "", "button_text": "View All", "button_link": "/products", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}},
+                    {"key": "featured_products", "enabled": True, "heading": "Featured Products", "subheading": "Featured", "description": "", "button_text": "View All", "button_link": "/products", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}},
+                    {"key": "categories", "enabled": True, "heading": "Product Categories", "subheading": "Our Products", "description": "", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}},
+                    {"key": "testimonials", "enabled": True, "heading": "What Our Dealers Say", "subheading": "Testimonials", "description": "", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}},
+                    {"key": "cta", "enabled": True, "heading": "Ready to Partner with Us?", "subheading": "Become a Dealer", "description": "<p>Join our growing network of 200+ dealers across India.</p>", "button_text": "Apply Now", "button_link": "/dealer", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}}
+                ],
+                "seo": {"meta_title": "Mayur Abrasives - Premium Cutting & Grinding Wheels", "meta_description": "Industry-leading abrasive products trusted by 200+ dealers across India. Cutting wheels, grinding wheels, flap discs and more.", "keywords": "cutting wheels, grinding wheels, abrasives, flap discs, India", "og_image": ""},
+                "meta": {},
+                "content_html": "",
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "about",
+                "title": "About Us",
+                "enabled": True,
+                "sort_order": 2,
+                "sections": [
+                    {"key": "hero", "enabled": True, "heading": "About Mayur Abrasives", "subheading": "Our Story", "description": "<p>Industrial strength, trusted quality since inception.</p>", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}}
+                ],
+                "content_html": "<p>Mayur Abrasives is a leading manufacturer and supplier of premium quality abrasive products.</p>",
+                "seo": {"meta_title": "About Us - Mayur Abrasives", "meta_description": "Learn about Mayur Abrasives - 15+ years of industrial-grade abrasive manufacturing.", "keywords": "about mayur, abrasives manufacturer", "og_image": ""},
+                "meta": {},
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "contact",
+                "title": "Contact Us",
+                "enabled": True,
+                "sort_order": 3,
+                "sections": [
+                    {"key": "hero", "enabled": True, "heading": "Get in Touch", "subheading": "Contact", "description": "<p>We're here to answer your questions and discuss your abrasive needs.</p>", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}}
+                ],
+                "content_html": "",
+                "seo": {"meta_title": "Contact Mayur Abrasives", "meta_description": "Get in touch with Mayur Abrasives. Call, WhatsApp or email us.", "keywords": "contact mayur, abrasives contact", "og_image": ""},
+                "meta": {},
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "privacy",
+                "title": "Privacy Policy",
+                "enabled": True,
+                "sort_order": 4,
+                "sections": [],
+                "content_html": "<h2>Privacy Policy</h2><p>This is a placeholder privacy policy. Please edit it from the Admin Page Management section.</p>",
+                "seo": {"meta_title": "Privacy Policy - Mayur Abrasives", "meta_description": "Read our privacy policy.", "keywords": "privacy policy", "og_image": ""},
+                "meta": {},
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "terms",
+                "title": "Terms & Conditions",
+                "enabled": True,
+                "sort_order": 5,
+                "sections": [],
+                "content_html": "<h2>Terms & Conditions</h2><p>This is a placeholder terms and conditions document. Please edit it from the Admin Page Management section.</p>",
+                "seo": {"meta_title": "Terms & Conditions - Mayur Abrasives", "meta_description": "Read our terms and conditions.", "keywords": "terms", "og_image": ""},
+                "meta": {},
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "dealer",
+                "title": "Dealer Registration",
+                "enabled": True,
+                "sort_order": 6,
+                "sections": [
+                    {"key": "hero", "enabled": True, "heading": "Become a Dealer", "subheading": "Partner with Us", "description": "<p>Join our network of 200+ dealers and grow your business with premium abrasive products.</p>", "button_text": "", "button_link": "", "image_url": "", "desktop_banner": "", "mobile_banner": "", "meta": {}}
+                ],
+                "content_html": "",
+                "seo": {"meta_title": "Become a Dealer - Mayur Abrasives", "meta_description": "Apply to join our nationwide dealer network.", "keywords": "dealer registration, become dealer", "og_image": ""},
+                "meta": {},
+                "created_at": now_iso,
+                "updated_at": now_iso
+            },
+            {
+                "key": "footer",
+                "title": "Footer",
+                "enabled": True,
+                "sort_order": 99,
+                "sections": [],
+                "content_html": "",
+                "seo": {"meta_title": "", "meta_description": "", "keywords": "", "og_image": ""},
+                "meta": {
+                    "company_description": "Mayur Abrasives — premium cutting wheels, grinding wheels, and abrasive products trusted by 200+ dealers across India.",
+                    "quick_links": [
+                        {"label": "Browse Products", "href": "/products"},
+                        {"label": "Become a Dealer", "href": "/dealer"},
+                        {"label": "Download Catalog", "href": "/catalog"},
+                        {"label": "About Us", "href": "/about"}
+                    ],
+                    "category_links": [],
+                    "social": {
+                        "facebook": "", "instagram": "", "linkedin": "",
+                        "youtube": "", "twitter": "", "whatsapp": ""
+                    },
+                    "copyright_text": ""
+                },
+                "created_at": now_iso,
+                "updated_at": now_iso
+            }
+        ]
+        await db.pages.insert_many(default_pages)
+        logger.info(f"Seeded {len(default_pages)} default CMS pages")
     
     # Seed sample products
     products_count = await db.products.count_documents({})

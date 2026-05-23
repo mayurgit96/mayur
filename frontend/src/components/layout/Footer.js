@@ -4,11 +4,30 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Phone, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube, MessageCircle, Loader } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { usePages } from "@/context/PagesContext";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const SOCIAL_ICONS = {
+  facebook: { Icon: Facebook, color: "#1877F2" },
+  instagram: { Icon: Instagram, color: "#E1306C" },
+  linkedin: { Icon: Linkedin, color: "#0A66C2" },
+  youtube: { Icon: Youtube, color: "#FF0000" },
+  twitter: { Icon: Twitter, color: "#000000" },
+  whatsapp: { Icon: MessageCircle, color: "#25D366" }
+};
+
 export default function Footer() {
   const { settings, getWhatsAppLink } = useSettings();
+  const { getPage } = usePages();
+  const footerPage = getPage("footer");
+  const fmeta = footerPage?.meta || {};
+  const social = fmeta.social || {};
+  const quickLinks = fmeta.quick_links && fmeta.quick_links.length > 0 ? fmeta.quick_links : [
+    { label: "Browse Products", href: "/products" },
+    { label: "Become a Dealer", href: "/dealer" },
+    { label: "Download Catalog", href: "/catalog" }
+  ];
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -67,6 +86,12 @@ export default function Footer() {
                 </>
               )}
             </div>
+
+            {fmeta.company_description && (
+              <p data-testid="footer-company-desc" className="text-gray-400 text-sm font-['Inter'] leading-relaxed mb-5">
+                {fmeta.company_description}
+              </p>
+            )}
 
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
@@ -180,71 +205,41 @@ export default function Footer() {
               Follow Us
             </h4>
             <div className="grid grid-cols-3 gap-3 max-w-[200px]">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition-colors"
-              >
-                <Facebook size={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-gradient-to-br hover:from-[#E1306C] hover:to-[#F77737] hover:border-transparent transition-colors"
-              >
-                <Instagram size={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="LinkedIn"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#0A66C2] hover:border-[#0A66C2] transition-colors"
-              >
-                <Linkedin size={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="YouTube"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#FF0000] hover:border-[#FF0000] transition-colors"
-              >
-                <Youtube size={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="X (Twitter)"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-black hover:border-white transition-colors"
-              >
-                <Twitter size={18} />
-              </a>
-              <a
-                href={getWhatsAppLink("Hi, I'd like to know more about Mayur Abrasives.")}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="WhatsApp"
-                className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#25D366] hover:border-[#25D366] transition-colors"
-              >
-                <MessageCircle size={18} />
-              </a>
+              {Object.entries(SOCIAL_ICONS).map(([key, { Icon, color }]) => {
+                const cmsUrl = social[key];
+                const href = key === "whatsapp"
+                  ? (cmsUrl || getWhatsAppLink("Hi, I'd like to know more about Mayur Abrasives."))
+                  : (cmsUrl || "#");
+                return (
+                  <a
+                    key={key}
+                    href={href}
+                    target={cmsUrl || key === "whatsapp" ? "_blank" : undefined}
+                    rel={cmsUrl || key === "whatsapp" ? "noopener noreferrer" : undefined}
+                    aria-label={key}
+                    data-testid={`footer-social-link-${key}`}
+                    style={{ "--hover-color": color }}
+                    className="aspect-square border border-gray-700 rounded flex items-center justify-center text-gray-400 hover:text-white transition-colors hover:border-transparent"
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = color; e.currentTarget.style.borderColor = color; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ""; e.currentTarget.style.borderColor = ""; }}
+                  >
+                    <Icon size={18} />
+                  </a>
+                );
+              })}
             </div>
 
             <div className="mt-8 space-y-2">
-              <Link
-                to="/products"
-                className="block text-gray-400 hover:text-[#FF6A00] transition-colors text-sm font-['Inter']"
-              >
-                Browse Products
-              </Link>
-              <Link
-                to="/dealer"
-                className="block text-gray-400 hover:text-[#FF6A00] transition-colors text-sm font-['Inter']"
-              >
-                Become a Dealer
-              </Link>
-              <Link
-                to="/catalog"
-                className="block text-gray-400 hover:text-[#FF6A00] transition-colors text-sm font-['Inter']"
-              >
-                Download Catalog
-              </Link>
+              {quickLinks.map((link, idx) => (
+                <Link
+                  key={`${link.href}-${idx}`}
+                  to={link.href || "#"}
+                  data-testid={`footer-quick-link-${idx}`}
+                  className="block text-gray-400 hover:text-[#FF6A00] transition-colors text-sm font-['Inter']"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -254,20 +249,14 @@ export default function Footer() {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm font-['Inter']">
-              © {new Date().getFullYear()} Mayur Abrasives. All rights reserved.
+            <p data-testid="footer-copyright" className="text-gray-500 text-sm font-['Inter']">
+              {fmeta.copyright_text || `© ${new Date().getFullYear()} Mayur Abrasives. All rights reserved.`}
             </p>
             <div className="flex gap-6">
-              <Link
-                to="/admin/login"
-                className="text-gray-500 hover:text-[#FF6A00] text-sm font-['Inter']"
-              >
-                Admin Login
-              </Link>
-              <Link to="#" className="text-gray-500 hover:text-white text-sm font-['Inter']">
+              <Link to="/privacy" className="text-gray-500 hover:text-white text-sm font-['Inter']">
                 Privacy Policy
               </Link>
-              <Link to="#" className="text-gray-500 hover:text-white text-sm font-['Inter']">
+              <Link to="/terms" className="text-gray-500 hover:text-white text-sm font-['Inter']">
                 Terms of Service
               </Link>
             </div>
