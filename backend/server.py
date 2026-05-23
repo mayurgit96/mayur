@@ -188,6 +188,7 @@ class SettingsUpdate(BaseModel):
     slider_images: Optional[List[str]] = None
     slider_slides: Optional[List[SliderSlide]] = None
     slider_interval: Optional[int] = None
+    logo_url: Optional[str] = None
 
 class SettingsResponse(BaseModel):
     whatsapp_number: str
@@ -745,6 +746,7 @@ async def get_settings():
     settings.setdefault("slider_interval", 3)
     settings.setdefault("hero_video_url", "")
     settings.setdefault("slider_slides", [])
+    settings.setdefault("logo_url", "")
     # Normalize slider_images (filter empties)
     settings["slider_images"] = [img for img in (settings.get("slider_images") or []) if img]
     # If slider_slides is empty but slider_images has entries, derive on-the-fly (desktop-only legacy)
@@ -768,12 +770,15 @@ async def update_settings(data: SettingsUpdate, request: Request):
         raise HTTPException(status_code=400, detail="No data to update")
     # Normalize slider_slides if provided
     if "slider_slides" in update_data:
-        update_data["slider_slides"] = [
-            {"desktop": (s.get("desktop") or "").strip(), "mobile": (s.get("mobile") or "").strip()}
-            for s in update_data["slider_slides"]
-        ]
+        normalized = []
+        for s in update_data["slider_slides"]:
+            ds = (s.get("desktop") or "").strip()
+            ms = (s.get("mobile") or "").strip()
+            if ds or ms:
+                normalized.append({"desktop": ds, "mobile": ms})
+        update_data["slider_slides"] = normalized
         # Sync slider_images (desktop URLs) for legacy consumers
-        update_data["slider_images"] = [s["desktop"] for s in update_data["slider_slides"] if s["desktop"]]
+        update_data["slider_images"] = [s["desktop"] for s in normalized if s["desktop"]]
     await db.settings.update_one(
         {"type": "global"},
         {"$set": update_data},
@@ -969,7 +974,8 @@ async def startup_event():
             "hero_video_url": "",
             "slider_images": [s["desktop"] for s in default_slides],
             "slider_slides": default_slides,
-            "slider_interval": 3
+            "slider_interval": 3,
+            "logo_url": "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/48c20evv_WhatsApp%20Image%202026-05-23%20at%202.29.04%20PM.jpeg"
         })
         logger.info("Default settings created")
     else:
@@ -989,6 +995,8 @@ async def startup_event():
             # Derive slides from existing slider_images
             existing_images = settings.get("slider_images") or backfill.get("slider_images") or []
             backfill["slider_slides"] = [{"desktop": img, "mobile": ""} for img in existing_images if img]
+        if "logo_url" not in settings:
+            backfill["logo_url"] = "https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/48c20evv_WhatsApp%20Image%202026-05-23%20at%202.29.04%20PM.jpeg"
         if backfill:
             await db.settings.update_one({"type": "global"}, {"$set": backfill})
             logger.info(f"Backfilled settings fields: {list(backfill.keys())}")

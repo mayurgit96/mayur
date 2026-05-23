@@ -88,52 +88,14 @@ export default function HomePage() {
 
   return (
     <div data-testid="home-page" className="bg-white">
-      {/* Hero Section with Image Slider */}
-      <section data-testid="hero-section" className="relative h-screen min-h-[700px] flex items-center">
+      {/* Hero Section — pure image slider, no overlay text */}
+      <section data-testid="hero-section" className="relative h-[60vh] sm:h-[70vh] lg:h-screen min-h-[320px] sm:min-h-[500px] lg:min-h-[700px]">
         <HeroSlider
           slides={settings.slider_slides}
           images={settings.slider_images}
           interval={settings.slider_interval}
+          showOverlay={false}
         />
-
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6 animate-fade-in">
-              <div className="w-8 sm:w-12 h-1 bg-[#FF6A00]"></div>
-              <p className="font-['Montserrat'] font-bold text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] text-[#FF6A00]">
-                Premium Abrasive Solutions
-              </p>
-            </div>
-            <h1 className="font-['Montserrat'] font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase tracking-tight text-white leading-[1.1] mb-4 sm:mb-6 animate-slide-up">
-              Power That<br />
-              <span className="text-[#FF6A00]">Shapes Metal</span>
-            </h1>
-            <p className="font-['Montserrat'] font-semibold text-lg sm:text-xl md:text-2xl uppercase tracking-wide text-white/90 mb-4 sm:mb-6 animate-slide-up stagger-2">
-              Precision That Builds Trust
-            </p>
-            <p className="font-['Inter'] text-white/70 text-base sm:text-lg max-w-lg mb-8 sm:mb-10 animate-fade-in stagger-3 leading-relaxed">
-              Industry-leading cutting wheels, grinding wheels, and abrasive products. 
-              Trusted by 200+ dealers across India.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in stagger-4">
-              <Link
-                to="/products"
-                data-testid="hero-explore-products-btn"
-                className="bg-[#FF6A00] text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 sm:px-8 py-4 hover:bg-[#0F3D2E] transition-colors flex items-center justify-center gap-2"
-              >
-                Explore Products <ArrowRight size={18} />
-              </Link>
-              <Link
-                to="/dealer"
-                data-testid="hero-become-dealer-btn"
-                className="border-2 border-white text-white font-['Montserrat'] font-bold text-sm uppercase tracking-widest px-6 sm:px-8 py-4 hover:bg-white hover:text-[#1A1A1A] transition-colors text-center"
-              >
-                Become Dealer
-              </Link>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Brand Introduction - Light */}

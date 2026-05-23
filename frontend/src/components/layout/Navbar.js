@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -16,6 +17,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { settings } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,9 +45,8 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
-  // Check if on homepage for transparent navbar
-  const isHomepage = location.pathname === "/";
-  const showTransparent = isHomepage && !isScrolled;
+  // Navbar is always solid white for clean look (logo has white background)
+  const showTransparent = false;
 
   return (
     <header
@@ -60,13 +61,24 @@ export default function Navbar() {
         <nav className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3" data-testid="logo-link">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#FF6A00] rounded flex items-center justify-center">
-              <span className="font-['Montserrat'] font-bold text-white text-lg sm:text-xl">M</span>
-            </div>
-            <div className="hidden xs:block">
-              <span className={`font-['Montserrat'] font-bold text-base sm:text-xl tracking-tight ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}>MAYUR</span>
-              <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-base sm:text-xl ml-1">ABRASIVES</span>
-            </div>
+            {settings.logo_url ? (
+              <img
+                src={settings.logo_url}
+                alt="Mayur Abrasives"
+                data-testid="navbar-logo-img"
+                className="h-10 sm:h-12 lg:h-14 w-auto object-contain"
+              />
+            ) : (
+              <>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#FF6A00] rounded flex items-center justify-center">
+                  <span className="font-['Montserrat'] font-bold text-white text-lg sm:text-xl">M</span>
+                </div>
+                <div className="hidden xs:block">
+                  <span className={`font-['Montserrat'] font-bold text-base sm:text-xl tracking-tight ${showTransparent ? "text-white" : "text-[#1A1A1A]"}`}>MAYUR</span>
+                  <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-base sm:text-xl ml-1">ABRASIVES</span>
+                </div>
+              </>
+            )}
           </Link>
 
           {/* Desktop Navigation */}

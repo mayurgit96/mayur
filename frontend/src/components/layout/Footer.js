@@ -48,13 +48,24 @@ export default function Footer() {
             </h4>
 
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#FF6A00] rounded flex items-center justify-center">
-                <span className="font-['Montserrat'] font-bold text-white text-xl">M</span>
-              </div>
-              <div>
-                <span className="font-['Montserrat'] font-bold text-white text-base">MAYUR</span>
-                <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-base ml-1">ABRASIVES</span>
-              </div>
+              {settings.logo_url ? (
+                <img
+                  src={settings.logo_url}
+                  alt="Mayur Abrasives"
+                  data-testid="footer-logo-img"
+                  className="h-14 w-auto object-contain bg-white p-1.5 rounded"
+                />
+              ) : (
+                <>
+                  <div className="w-10 h-10 bg-[#FF6A00] rounded flex items-center justify-center">
+                    <span className="font-['Montserrat'] font-bold text-white text-xl">M</span>
+                  </div>
+                  <div>
+                    <span className="font-['Montserrat'] font-bold text-white text-base">MAYUR</span>
+                    <span className="text-[#FF6A00] font-['Montserrat'] font-bold text-base ml-1">ABRASIVES</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <ul className="space-y-4">

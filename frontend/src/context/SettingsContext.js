@@ -15,7 +15,8 @@ export function SettingsProvider({ children }) {
     hero_video_url: "",
     slider_images: [],
     slider_slides: [],
-    slider_interval: 3
+    slider_interval: 3,
+    logo_url: ""
   });
 
   useEffect(() => {

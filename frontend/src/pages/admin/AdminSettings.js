@@ -19,10 +19,13 @@ export default function AdminSettings() {
     company_phone: "",
     company_address: "",
     google_maps_embed: "",
+    logo_url: "",
     slider_slides: Array.from({ length: SLIDER_SLOT_COUNT }, emptySlide),
     slider_interval: 3
   });
   const fileInputRefs = useRef({});
+  const logoFileRef = useRef(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -43,6 +46,7 @@ export default function AdminSettings() {
         company_phone: data.company_phone || "",
         company_address: data.company_address || "",
         google_maps_embed: data.google_maps_embed || "",
+        logo_url: data.logo_url || "",
         slider_slides: slides,
         slider_interval: data.slider_interval || 3
       });
@@ -64,7 +68,8 @@ export default function AdminSettings() {
           company_email: settings.company_email,
           company_phone: settings.company_phone,
           company_address: settings.company_address,
-          google_maps_embed: settings.google_maps_embed
+          google_maps_embed: settings.google_maps_embed,
+          logo_url: settings.logo_url
         },
         { withCredentials: true }
       );
@@ -73,6 +78,33 @@ export default function AdminSettings() {
       toast.error("Failed to save settings");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const { data } = await axios.post(`${API}/upload-image`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setSettings((prev) => ({ ...prev, logo_url: data.url }));
+      toast.success("Logo uploaded — click Save Settings to persist");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Upload failed");
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -158,6 +190,73 @@ export default function AdminSettings() {
           </h2>
 
           <form onSubmit={handleCompanySubmit} className="space-y-6">
+            {/* Brand Logo */}
+            <div data-testid="logo-settings">
+              <label className="text-[#6B7280] text-sm mb-2 block">Brand Logo</label>
+              <div className="bg-[#0F0F0F] border border-white/10 p-4 space-y-3">
+                <div className="w-full h-28 bg-white flex items-center justify-center overflow-hidden">
+                  {settings.logo_url ? (
+                    <img
+                      src={settings.logo_url}
+                      alt="Current logo"
+                      data-testid="logo-preview"
+                      className="h-full w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-[#6B7280] text-xs">No logo uploaded</span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={settings.logo_url}
+                  onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
+                  data-testid="logo-url-input"
+                  placeholder="Paste logo image URL"
+                  className="w-full bg-[#1A1A1A] border border-white/10 text-white px-3 py-2 text-sm focus:border-[#FF6A00] focus:outline-none"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={logoFileRef}
+                    onChange={(e) => handleLogoUpload(e.target.files?.[0])}
+                    className="hidden"
+                    data-testid="logo-file-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => logoFileRef.current?.click()}
+                    disabled={uploadingLogo}
+                    data-testid="logo-upload-btn"
+                    className="flex-1 border border-white/10 text-white text-xs uppercase tracking-wider py-2 px-3 flex items-center justify-center gap-2 hover:border-[#FF6A00] hover:text-[#FF6A00] transition-colors disabled:opacity-50"
+                  >
+                    {uploadingLogo ? (
+                      <>
+                        <Loader className="animate-spin" size={14} />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={14} />
+                        Upload from device
+                      </>
+                    )}
+                  </button>
+                  {settings.logo_url && (
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, logo_url: "" })}
+                      data-testid="logo-clear-btn"
+                      className="border border-white/10 text-[#6B7280] hover:text-red-500 px-3 py-2 text-xs uppercase tracking-wider transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <p className="text-[#6B7280] text-xs">PNG/JPG, max 5MB. Save Settings after upload to persist.</p>
+              </div>
+            </div>
+
             <div>
               <label className="text-[#6B7280] text-sm mb-2 block">WhatsApp Number</label>
               <input

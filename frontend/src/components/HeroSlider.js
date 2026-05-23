@@ -12,7 +12,7 @@ const MOBILE_BREAKPOINT = 768; // px — anything <=768 is treated as "mobile"
  *  - interval: number (seconds between auto-advances; default 3)
  *  - children: ReactNode (overlay content, e.g. headline + buttons)
  */
-export default function HeroSlider({ slides, images = [], interval = 3, children }) {
+export default function HeroSlider({ slides, images = [], interval = 3, children, showOverlay = true }) {
   // Normalize input into a uniform shape: { desktop, mobile }
   const normalized = useMemo(() => {
     const raw = Array.isArray(slides) && slides.length > 0
@@ -87,8 +87,10 @@ export default function HeroSlider({ slides, images = [], interval = 3, children
         );
       })}
 
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 pointer-events-none"></div>
+      {/* Dark gradient overlay (only when overlay content is shown) */}
+      {showOverlay && (
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 pointer-events-none"></div>
+      )}
 
       {/* Hero content overlay (passed via children) */}
       {children}

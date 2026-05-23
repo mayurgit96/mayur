@@ -1,0 +1,39 @@
+{
+  "summary": "Iter6 (logo + no-overlay hero) verified end-to-end. Backend: 6/6 new pytest cases pass for logo_url field on /api/settings (GET returns Mayur Plus customer-assets URL after backfill; admin-guarded PUT persists new URL; PUT '' resets to empty; admin guard rejects unauth; AND the iter5 carry-over empty-slide-filter bug is FIXED — PUT slider_slides=[{A,B},{'',''}] now returns only 1 slide). Iter5 regression suite also re-runs green (6/6). Frontend: at 1920x800 the hero shows ONLY the image + prev/next arrows + 5 dots — all overlay text ('PREMIUM ABRASIVE SOLUTIONS', 'POWER THAT', 'PRECISION THAT', explore/dealer buttons) returns count=0. At 390x844 mobile the same is true; hero height = 506px (~60vh of 844). Desktop hero height = 800px (h-screen). Navbar shows the Mayur Plus PNG via data-testid=navbar-logo-img at both desktop and mobile widths; navbar background at scrollY=0 on homepage = rgb(255,255,255) (solid white). Footer also renders data-testid=footer-logo-img with the same logo. Admin Settings Brand Logo card present with all 6 testids (logo-settings, logo-preview, logo-url-input, logo-upload-btn, logo-file-input, logo-clear-btn). Tested: clear via X → save → reload → navbar reverts to 'M MAYUR ABRASIVES' fallback (logo-img count drops to 0, fallback text appears 4x). Then restore via URL input → save → navbar logo image returns. Homepage regression (about/new-products/footer) all render. No console errors during runs (only expected 401 on /api/auth/me when anonymous).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_logo_and_slides.py",
+    "/app/backend/tests/test_slider_slides_mobile.py",
+    "/app/test_reports/pytest/logo_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py PUT /api/settings still uses `v is not None` filter on model_dump, so logo_url='' DOES pass through correctly (verified empirically — empty string clears the field). Good.",
+    "server.py is now 1166 lines — has crossed the 700-line soft limit by a wide margin. Strongly recommend splitting into routers (settings_router.py, products_router.py, categories_router.py, auth_router.py).",
+    "Iter5 empty-slide filter bug is fixed (lines 777-778 add `if ds or ms` guard before appending). Verified by new test.",
+    "Navbar.js renders <img src={settings.logo_url}> with a white tile background — works, but no onError fallback to the 'M' placeholder if the URL is set but broken (e.g., 404). Consider adding onError handler.",
+    "Footer.js places the logo on a white tile (good — the Mayur Plus PNG has a white background), but the tile creates a slight visual seam against the dark footer. Acceptable for MVP.",
+    "AdminSettings logo_url file upload via setInputFiles was NOT exercised in this run (would require a real image fixture path); the file picker testid exists and the URL-input + Save flow (which exercises the same backend PUT) is fully verified. Main agent or next iteration can spot-check file-upload base64 conversion via the existing /api/upload-image endpoint if needed."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_logo_and_slides.py (new — 6 pytest cases for logo_url GET/PUT + empty-slide filter regression)"
+  ],
+  "success_rate": {
+    "backend": "100% (6/6 new logo+slide tests, plus 6/6 iter5 regression)",
+    "frontend": "100% (desktop+mobile hero no-overlay verified, hero heights responsive, navbar+footer logos render with correct src, navbar bg white, admin logo card all 6 testids present, clear→save→fallback verified, URL→save→restore verified, homepage regression sections all render, no console errors)"
+  },
+  "test_credentials": "admin@mayur.com / MayurAdmin@2024 — verified working via data-testid=admin-email-input / admin-password-input + Sign In button.",
+  "seed_data_creation": "Backend tests temporarily PUT a test logo URL/empty string and restore to the original captured value via module-scoped fixture. Frontend test cleared the logo, verified fallback, then restored the original Mayur Plus URL via URL input + Save. No leftover test data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All iter6 testids: logo-settings (Brand Logo card container), logo-preview (img preview when logo_url is set — absent when empty), logo-url-input (text input), logo-upload-btn (file picker trigger), logo-file-input (hidden file input — use page.set_input_files on this), logo-clear-btn (X — only present when logo_url is non-empty), navbar-logo-img (img tag in navbar), footer-logo-img (img tag in footer). Save Settings persistence button is data-testid=save-settings-btn (NOT save-slider-btn — that's a separate button for the slider panel). Mayur Plus default URL: https://customer-assets.emergentagent.com/job_precision-abrasives/artifacts/48c20evv_WhatsApp%20Image%202026-05-23%20at%202.29.04%20PM.jpeg. The hero now NEVER shows overlay text — HeroSlider.js has a showOverlay prop (defaults true), but HomePage.js passes false. If a future change wants overlay back on a different page (e.g., About hero reuses HeroSlider), they can pass showOverlay=true. Hero responsive heights: mobile h-[60vh] (min 320px), sm h-[70vh] (min 500px), lg h-screen (min 700px) — all verified.",
+  "rca of the issue": "N/A — all iter6 spec items pass. Iter5 backend bug (empty slide not filtered) is fixed in this iteration as expected (server.py lines 777-778 now have `if ds or ms:` guard before appending the normalized slide)."
+}
