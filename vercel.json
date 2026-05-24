@@ -1,9 +1,5 @@
 {
   "experimentalServices": {
-    "frontend": {
-      "framework": "create-react-app",
-      "routePrefix": "/"
-    },
     "backend": {
       "root": "backend",
       "framework": "fastapi",
