@@ -1,7 +1,6 @@
 {
   "experimentalServices": {
     "frontend": {
-      "root": "frontend",
       "framework": "create-react-app",
       "routePrefix": "/"
     },
