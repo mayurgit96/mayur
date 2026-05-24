@@ -17,7 +17,7 @@ export function PagesProvider({ children }) {
     try {
       const { data } = await axios.get(`${API}/pages`);
       const byKey = {};
-      (data || []).forEach((p) => {
+      (Array.isArray(data) ? data : []).forEach((p) => {
         byKey[p.key] = p;
       });
       setPages(byKey);
