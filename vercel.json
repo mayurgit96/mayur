@@ -1,7 +1,8 @@
 {
   "experimentalServices": {
     "frontend": {
-      "framework": "vite",
+      "root": "frontend",
+      "framework": "create-react-app",
       "routePrefix": "/"
     },
     "backend": {
