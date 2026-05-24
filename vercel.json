@@ -1,9 +1,1 @@
-{
-  "experimentalServices": {
-    "backend": {
-      "root": "backend",
-      "framework": "fastapi",
-      "routePrefix": "/_/backend"
-    }
-  }
-}
+
